@@ -68,7 +68,7 @@ export default function CategoryPage() {
                     <div className="absolute inset-0 bg-black/30 z-10" /> {/* Overlay */}
                     <div 
                         className="w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-[2s] hover:scale-105"
-                        style={{ backgroundImage: 'url(/hero-new.png)' }}
+                        style={{ backgroundImage: 'url(/hero-image.jpeg)' }}
                     />
                 </div>
 

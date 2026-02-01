@@ -30,12 +30,12 @@ export function Tutorials() {
             title: "FACE",
             image: "/face_tutorial.jpg", // Brushes face
             link: "/tutorials/face",
-            video: "YOUR_CLOUDINARY_VIDEO_URL_HERE" // Replace with your Cloudinary URL after uploading
+            video: "YOUR_YOUTUBE_VIDEO_ID" // Replace with your YouTube video ID (e.g., dQw4w9WgXcQ from youtube.com/watch?v=dQw4w9WgXcQ)
         },
         {
             subtitle: "HOW TO",
             title: "LIPS",
-            image: "/lips_tutorial.jpg", // Lips close up
+            image: "/lips_tutorial.jpeg", // Lips close up
             link: "/tutorials/lips"
         }
     ];
@@ -203,11 +203,12 @@ export function Tutorials() {
                             >
                                 <X size={24} />
                             </button>
-                            <video
-                                src={selectedVideo}
-                                controls
-                                autoPlay
-                                className="w-full h-full object-contain"
+                            <iframe
+                                src={`https://www.youtube.com/embed/${selectedVideo}?autoplay=1`}
+                                title="Tutorial Video"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="w-full h-full"
                             />
                         </motion.div>
                     </motion.div>

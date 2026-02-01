@@ -92,9 +92,9 @@ export function Header() {
                         </span>
                     </div>
                     <div className="hidden md:flex gap-4 items-center opacity-70">
-                        <Link href="https://www.tiktok.com/tag/liyadances" target="_blank" className="hover:text-brand-rose transition-colors"><Tiktok size={14} /></Link>
-                        <Link href="#" className="hover:text-brand-rose transition-colors"><Instagram size={12} /></Link>
-                        <Link href="#" className="hover:text-brand-rose transition-colors"><Facebook size={12} /></Link>
+                        <Link href="https://www.tiktok.com/@kofabeauty?_r=1&_t=ZN-93Z5Xv8kU3q" target="_blank" className="hover:text-brand-rose transition-colors"><Tiktok size={14} /></Link>
+                        <Link href="https://www.instagram.com/kofabeautyy?igsh=MWFlbjhzNjJ1c2ZmYQ%3D%3D&utm_source=qr" target="_blank" className="hover:text-brand-rose transition-colors"><Instagram size={12} /></Link>
+                        <Link href="https://www.facebook.com/kofabeauty" target="_blank" className="hover:text-brand-rose transition-colors"><Facebook size={12} /></Link>
                     </div>
                 </div>
             )}
