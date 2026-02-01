@@ -8,9 +8,28 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error && session?.user) {
+      // If a specific next path is provided (like /reset-password), use it
+      const redirectTo = searchParams.get('next')
+      if (redirectTo) {
+        return NextResponse.redirect(`${origin}${redirectTo}`)
+      }
+
+      // Otherwise, check user role for default redirection
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile?.role === 'admin') {
+        return NextResponse.redirect(`${origin}/admin/dashboard`)
+      }
+      
+      // Default for customers
+      return NextResponse.redirect(`${origin}/`)
     }
   }
 

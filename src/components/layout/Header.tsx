@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCartStore, getCartSubtotal } from "@/lib/store/useCartStore";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,6 +17,10 @@ export function Header() {
     const { items } = useCartStore();
     const subtotal = getCartSubtotal(items);
     const [isMounted, setIsMounted] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
+    const supabase = createClient();
+    const router = useRouter();
 
     useEffect(() => {
         setIsMounted(true);
@@ -21,8 +28,53 @@ export function Header() {
             setScrolled(window.scrollY > 50);
         };
         window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+
+        // Get initial session
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+                setProfile(profile);
+            }
+        };
+        getSession();
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+                setProfile(profile);
+            } else {
+                setProfile(null);
+            }
+        });
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            subscription.unsubscribe();
+        };
     }, []);
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            toast.error(error.message);
+        } else {
+            toast.success("Logged out successfully");
+            router.push("/");
+            router.refresh();
+        }
+    };
 
     const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -82,9 +134,28 @@ export function Header() {
                                         ))}
                                     </nav>
                                     <div className="mt-auto p-8 bg-white/5">
-                                        <Link href="/login" className="flex items-center gap-3 text-sm tracking-widest uppercase mb-8">
-                                            <User size={18} /> My Account
-                                        </Link>
+                                        {user ? (
+                                            <div className="space-y-4 mb-8">
+                                                <div className="flex flex-col gap-1">
+                                                    <p className="text-[10px] uppercase tracking-widest text-brand-rose opacity-80">Welcome</p>
+                                                    <p className="text-xl font-megante">{profile?.full_name || user.email}</p>
+                                                </div>
+                                                <div className="flex flex-col gap-4">
+                                                    {profile?.role === 'admin' && (
+                                                        <Link href="/admin/dashboard" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm tracking-widest uppercase hover:text-brand-rose transition-colors">
+                                                            <LayoutDashboard size={18} /> Admin Panel
+                                                        </Link>
+                                                    )}
+                                                    <button onClick={handleLogout} className="flex items-center gap-3 text-sm tracking-widest uppercase hover:text-brand-rose transition-colors text-left w-full">
+                                                        <LogOut size={18} /> Logout
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <Link href="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm tracking-widest uppercase mb-8 hover:text-brand-rose transition-colors">
+                                                <User size={18} /> My Account
+                                            </Link>
+                                        )}
                                         <div className="flex gap-6 opacity-50">
                                             <Instagram size={20} />
                                             <Facebook size={20} />
@@ -126,9 +197,42 @@ export function Header() {
 
                     {/* Right: Icons */}
                     <div className="flex items-center gap-5 md:gap-8 text-white">
-                        <Link href="/login" className="hidden md:flex items-center hover:text-brand-rose transition-colors group">
-                            <User size={20} strokeWidth={1.5} />
-                        </Link>
+                        {user ? (
+                            <div className="flex items-center gap-6">
+                                {profile?.role === 'admin' && (
+                                    <Link href="/admin/dashboard" className="flex items-center gap-2 hover:text-brand-rose transition-colors">
+                                        <LayoutDashboard size={18} strokeWidth={1.5} />
+                                        <span className="text-[9px] uppercase tracking-widest font-bold">Dashboard</span>
+                                    </Link>
+                                )}
+                                <div className="flex items-center gap-3 group relative cursor-default">
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:border-brand-rose transition-colors">
+                                        <User size={16} strokeWidth={1.5} />
+                                    </div>
+                                    <span className="hidden lg:block text-[9px] uppercase tracking-widest font-bold max-w-[100px] truncate">
+                                        {profile?.first_name || 'My Account'}
+                                    </span>
+                                    
+                                    {/* Dropdown Menu */}
+                                    <div className="absolute top-full right-0 mt-2 w-48 bg-black/95 backdrop-blur-md border border-white/10 p-2 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                                        <div className="px-4 py-3 border-b border-white/5 mb-2">
+                                            <p className="text-[8px] uppercase tracking-widest text-muted-foreground">Logged in as</p>
+                                            <p className="text-[10px] font-bold truncate">{user.email}</p>
+                                        </div>
+                                        <button 
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-4 py-2 text-[10px] uppercase tracking-widest hover:bg-white/5 hover:text-brand-rose transition-colors rounded-md"
+                                        >
+                                            <LogOut size={14} /> Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link href="/login" className="hidden md:flex items-center hover:text-brand-rose transition-colors group">
+                                <User size={20} strokeWidth={1.5} />
+                            </Link>
+                        )}
                         <Link href="/cart" className="relative hover:text-brand-rose transition-colors group">
                             <ShoppingBag size={20} strokeWidth={1.5} />
                             {isMounted && cartCount > 0 && (

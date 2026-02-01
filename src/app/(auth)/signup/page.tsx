@@ -34,6 +34,7 @@ export default function SignupPage() {
                     last_name: lastName,
                     full_name: `${firstName} ${lastName}`,
                 },
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
             },
         });
 
@@ -42,7 +43,7 @@ export default function SignupPage() {
             setIsLoading(false);
         } else {
             toast.success("Account created! Check your email to confirm your account.");
-            router.push("/login");
+            router.push("/login?message=check-email");
         }
     };
 

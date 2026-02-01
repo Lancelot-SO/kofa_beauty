@@ -7,23 +7,42 @@ import { Reveal } from "@/components/ui/Reveal";
 import { ChevronLeft, ArrowRight, Chrome } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+    const router = useRouter();
+    const supabase = createClient();
+
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-white" />}>
+            <LoginForm />
+        </Suspense>
+    );
+}
+
+function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
+    const searchParams = useSearchParams();
     const supabase = createClient();
+
+    useEffect(() => {
+        const message = searchParams.get('message');
+        if (message === 'password-reset-success') {
+            toast.success("Password updated successfully! You can now log in.");
+        }
+    }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
@@ -31,9 +50,21 @@ export default function LoginPage() {
         if (error) {
             toast.error(error.message);
             setIsLoading(false);
-        } else {
+        } else if (user) {
+            // Check role for redirection
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
             toast.success("Welcome back!");
-            router.push("/admin/dashboard");
+            
+            if (profile?.role === 'admin') {
+                router.push("/admin/dashboard");
+            } else {
+                router.push("/");
+            }
             router.refresh();
         }
     };
@@ -87,8 +118,8 @@ export default function LoginPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center px-4">
-                                        <Label htmlFor="password" className="text-[10px] uppercase tracking-widest font-bold">Password</Label>
-                                        <Link href="#" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-black transition-colors underline underline-offset-4">Forgot Password?</Link>
+                                        <Label htmlFor="password" title="Password"  className="text-[10px] uppercase tracking-widest font-bold">Password</Label>
+                                        <Link href="/forgot-password" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-black transition-colors underline underline-offset-4">Forgot Password?</Link>
                                     </div>
                                     <Input
                                         id="password"

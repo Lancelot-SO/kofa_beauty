@@ -38,29 +38,28 @@ export async function updateSession(request: NextRequest) {
   // Protect admin routes - only allow admin role
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
-      // Redirect unauthenticated users to login
+      console.log('[Middleware] No user detected for admin route. Redirecting to /login');
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
     }
 
-    // Check if user has admin role
-    const { data: profile, error } = await supabase
+    // Double check profile for role
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    console.log(`[Middleware] Checking admin access for ${user.email}:`, { profile, error, role: profile?.role });
-
-    if (!profile || profile.role !== 'admin') {
-      console.log(`[Middleware] Access denied for ${user.email}. Redirecting to /`);
-      // Redirect non-admin users to homepage
+    if (profileError || !profile || profile.role !== 'admin') {
+      console.error(`[Middleware] Unauthorized access attempt by ${user.email} to ${request.nextUrl.pathname}. Profile:`, profile);
       const url = request.nextUrl.clone()
       url.pathname = '/'
-      url.searchParams.set('error', 'admin_only')
+      url.searchParams.set('error', 'unauthorized')
       return NextResponse.redirect(url)
     }
+    
+    console.log(`[Middleware] Admin access granted for ${user.email}`);
   }
 
   // Redirect authenticated users away from auth pages

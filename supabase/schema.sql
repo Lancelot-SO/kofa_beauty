@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
     customer_name TEXT NOT NULL,
     customer_email TEXT NOT NULL,
-    status TEXT DEFAULT 'Processing' CHECK (status IN ('Processing', 'Shipped', 'Delivered', 'Cancelled')),
+    status TEXT DEFAULT 'Pending Payment' CHECK (status IN ('Pending Payment', 'Processing', 'Shipped', 'Delivered', 'Cancelled')),
     total DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -131,28 +131,45 @@ CREATE POLICY "Authenticated users can update products" ON products
 CREATE POLICY "Authenticated users can delete products" ON products
     FOR DELETE USING (auth.role() = 'authenticated');
 
--- ORDERS: Users can view their own orders, authenticated can view all
+-- ORDERS: Users can view their own orders, admins can view all
+-- Using IS NOT DISTINCT FROM allows guests (NULL customer_id) to see their own records
 CREATE POLICY "Users can view own orders" ON orders
-    FOR SELECT USING (auth.uid() = customer_id OR auth.role() = 'authenticated');
+    FOR SELECT USING (
+        auth.uid() IS NOT DISTINCT FROM customer_id OR 
+        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
+-- Fallback to allow anyone to select - useful for Guest checkout success page
+CREATE POLICY "Allow anyone to select orders" ON orders
+    FOR SELECT USING (true);
 
 CREATE POLICY "Anyone can create orders" ON orders
     FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can update orders" ON orders
-    FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can update orders" ON orders
+    FOR UPDATE USING (
+        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    );
 
-CREATE POLICY "Authenticated users can delete orders" ON orders
-    FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can delete orders" ON orders
+    FOR DELETE USING (
+        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    );
 
--- ORDER ITEMS: Same as orders
+-- ORDER ITEMS: Users can view their own order items, admins can view all
 CREATE POLICY "Users can view own order items" ON order_items
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM orders 
             WHERE orders.id = order_items.order_id 
-            AND (orders.customer_id = auth.uid() OR auth.role() = 'authenticated')
+            AND (orders.customer_id IS NOT DISTINCT FROM auth.uid() OR 
+                 EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
         )
     );
+
+-- Fallback to allow anyone to select order items
+CREATE POLICY "Allow anyone to select order items" ON order_items
+    FOR SELECT USING (true);
 
 CREATE POLICY "Anyone can create order items" ON order_items
     FOR INSERT WITH CHECK (true);

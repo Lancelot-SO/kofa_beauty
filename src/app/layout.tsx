@@ -33,8 +33,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${montserrat.variable} ${bodoni.variable} ${megante.variable} font-sans antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body 
+        className={`${montserrat.variable} ${bodoni.variable} ${megante.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         {children}
         <Toaster />
       </body>
