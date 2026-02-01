@@ -65,7 +65,7 @@ export function EssentialsDrop() {
                         <h4 className="text-sm font-bold tracking-widest text-gray-500 mb-2">DON'T MISS OUT</h4>
                     </Reveal>
                     <Reveal delay={200}>
-                        <h2 className="text-3xl md:text-4xl font-megante font-light tracking-wide text-black uppercase">
+                        <h2 className="text-3xl md:text-4xl font-playfair font-bold tracking-wide text-black uppercase">
                             The Essentials Drop
                         </h2>
                     </Reveal>

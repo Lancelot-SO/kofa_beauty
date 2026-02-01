@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat, Bodoni_Moda } from "next/font/google";
+import { Montserrat, Bodoni_Moda, Playfair_Display, Lato } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -13,6 +13,20 @@ const montserrat = Montserrat({
 const bodoni = Bodoni_Moda({
   variable: "--font-serif",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const lato = Lato({
+  variable: "--font-lato",
+  subsets: ["latin"],
+  weight: ["300"],
   display: "swap",
 });
 
@@ -35,7 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body 
-        className={`${montserrat.variable} ${bodoni.variable} ${megante.variable} font-sans antialiased`}
+        className={`${montserrat.variable} ${bodoni.variable} ${megante.variable} ${playfair.variable} ${lato.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         {children}

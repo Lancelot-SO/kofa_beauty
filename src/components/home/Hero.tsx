@@ -43,13 +43,13 @@ export function Hero() {
             <div className="relative h-full container mx-auto px-4 flex flex-col justify-center items-start text-left text-white z-10 pt-20">
                 <div className="max-w-4xl space-y-6">
                     <Reveal>
-                        <p className="font-sans text-sm md:text-base font-medium tracking-[0.4em] uppercase text-white/90 mb-4">
+                        <p className="font-lato text-sm md:text-base font-light tracking-[0.4em] uppercase text-white/90 mb-4">
                             Welcome to Kofa Beauty
                         </p>
                     </Reveal>
 
                     <Reveal delay={200}>
-                        <h1 className="font-megante text-5xl md:text-7xl lg:text-8xl font-medium tracking-wide leading-tight text-[#f3e6e6]">
+                        <h1 className="font-playfair text-5xl md:text-7xl lg:text-8xl font-medium tracking-wide leading-tight text-[#f3e6e6]">
                             Brush Up on <br />
                             <span className="italic block mt-2 text-white">the Basics</span>
                         </h1>

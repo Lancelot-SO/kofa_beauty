@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useScroll, useTransform, Variants } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, Variants, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 
 export function Tutorials() {
     const containerRef = useRef(null);
+    const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start end", "end start"]
@@ -19,19 +22,20 @@ export function Tutorials() {
         {
             subtitle: "HOW TO",
             title: "EYES",
-            image: "/eyes.avif", // Close up eye makeup
+            image: "/eyes_tutorial.jpg", // Close up eye makeup
             link: "/tutorials/eyes"
         },
         {
             subtitle: "HOW TO",
             title: "FACE",
-            image: "/face.avif", // Brushes face
-            link: "/tutorials/face"
+            image: "/face_tutorial.jpg", // Brushes face
+            link: "/tutorials/face",
+            video: "YOUR_CLOUDINARY_VIDEO_URL_HERE" // Replace with your Cloudinary URL after uploading
         },
         {
             subtitle: "HOW TO",
             title: "LIPS",
-            image: "/lips.avif", // Lips close up
+            image: "/lips_tutorial.jpg", // Lips close up
             link: "/tutorials/lips"
         }
     ];
@@ -72,6 +76,25 @@ export function Tutorials() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {categories.map((category, index) => {
                         const isMiddle = index === 1;
+                        const hasVideo = 'video' in category;
+
+                        const content = (
+                            <motion.div
+                                className="w-full h-full relative"
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ duration: 0.6 }}
+                            >
+                                <Image
+                                    src={category.image}
+                                    alt={`How to ${category.title}`}
+                                    fill
+                                    className="object-cover object-center"
+                                />
+                                {/* Gradient to make text readable */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80" />
+                            </motion.div>
+                        );
+
                         return (
                             <motion.div
                                 key={index}
@@ -82,46 +105,114 @@ export function Tutorials() {
                                 viewport={{ once: true, margin: "-50px" }}
                                 variants={itemVariants}
                             >
-                                <Link href={category.link} className="group block relative h-[400px] md:h-[450px] w-full overflow-hidden">
-                                    <motion.div
-                                        className="w-full h-full relative"
-                                        whileHover={{ scale: 1.05 }}
-                                        transition={{ duration: 0.6 }}
+                                {hasVideo ? (
+                                    <motion.button
+                                        onClick={() => setSelectedVideo(category.video!)}
+                                        whileHover="hover"
+                                        initial="initial"
+                                        className="group block relative h-[400px] md:h-[450px] w-full overflow-hidden text-left"
                                     >
-                                        <Image
-                                            src={category.image}
-                                            alt={`How to ${category.title}`}
-                                            fill
-                                            className="object-cover object-center"
-                                        />
-                                        {/* Gradient to make text readable */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80" />
-                                    </motion.div>
+                                        {content}
+                                        
+                                        {/* Play/Watch Hint - Centered in the middle */}
+                                        <motion.div
+                                            variants={{
+                                                initial: { opacity: 0, y: 10 },
+                                                hover: { opacity: 1, y: 0 }
+                                            }}
+                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none z-10"
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <div className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center mb-3 bg-black/20 backdrop-blur-sm">
+                                                <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                                            </div>
+                                            <span className="text-white text-[10px] tracking-[0.3em] font-lato font-light uppercase whitespace-nowrap bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                                                Click to watch tutorial
+                                            </span>
+                                        </motion.div>
 
-                                    <div className="absolute inset-x-0 bottom-8 flex flex-col items-center justify-end text-center p-6">
-                                        <motion.span
-                                            initial={{ opacity: 0, y: 10 }}
-                                            whileInView={{ opacity: 0.9, y: 0 }}
-                                            transition={{ delay: 0.2 + (index * 0.1) }}
-                                            className="text-white text-xs tracking-[0.25em] font-bold mb-3 uppercase"
-                                        >
-                                            {category.subtitle}
-                                        </motion.span>
-                                        <motion.h3
-                                            initial={{ opacity: 0, y: 10 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.3 + (index * 0.1) }}
-                                            className="text-white text-5xl md:text-6xl font-megante font-medium tracking-wide"
-                                        >
-                                            {category.title}
-                                        </motion.h3>
-                                    </div>
-                                </Link>
+                                        {/* Bottom text overlay */}
+                                        <div className="absolute inset-x-0 bottom-8 flex flex-col items-center justify-end text-center p-6">
+                                            <motion.span
+                                                initial={{ opacity: 0, y: 10 }}
+                                                whileInView={{ opacity: 0.9, y: 0 }}
+                                                transition={{ delay: 0.2 + (index * 0.1) }}
+                                                className="text-white text-xs tracking-[0.25em] font-lato font-light mb-3 uppercase"
+                                            >
+                                                {category.subtitle}
+                                            </motion.span>
+
+                                            <motion.h3
+                                                initial={{ opacity: 0, y: 10 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.3 + (index * 0.1) }}
+                                                className="text-white text-5xl md:text-6xl font-playfair font-medium tracking-wide"
+                                            >
+                                                {category.title}
+                                            </motion.h3>
+                                        </div>
+                                    </motion.button>
+                                ) : (
+                                    <Link href={category.link} className="group block relative h-[400px] md:h-[450px] w-full overflow-hidden">
+                                        {content}
+                                        <div className="absolute inset-x-0 bottom-8 flex flex-col items-center justify-end text-center p-6">
+                                            <motion.span
+                                                initial={{ opacity: 0, y: 10 }}
+                                                whileInView={{ opacity: 0.9, y: 0 }}
+                                                transition={{ delay: 0.2 + (index * 0.1) }}
+                                                className="text-white text-xs tracking-[0.25em] font-lato font-light mb-3 uppercase"
+                                            >
+                                                {category.subtitle}
+                                            </motion.span>
+                                            <motion.h3
+                                                initial={{ opacity: 0, y: 10 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.3 + (index * 0.1) }}
+                                                className="text-white text-5xl md:text-6xl font-playfair font-medium tracking-wide"
+                                            >
+                                                {category.title}
+                                            </motion.h3>
+                                        </div>
+                                    </Link>
+                                )}
                             </motion.div>
                         );
                     })}
                 </div>
             </div>
+
+            <AnimatePresence>
+                {selectedVideo && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedVideo(null)}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+                        >
+                            <button
+                                onClick={() => setSelectedVideo(null)}
+                                className="absolute top-4 right-4 z-[110] p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                            <video
+                                src={selectedVideo}
+                                controls
+                                autoPlay
+                                className="w-full h-full object-contain"
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 }
