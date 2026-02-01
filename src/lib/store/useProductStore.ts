@@ -11,12 +11,45 @@ interface ProductState {
     updateProduct: (id: string, updates: ProductUpdate) => Promise<void>;
     deleteProduct: (id: string) => Promise<void>;
     getProduct: (id: string) => Product | undefined;
+    searchResults: Product[];
+    isSearching: boolean;
+    searchProducts: (query: string) => Promise<void>;
+    fetchProducts: () => Promise<void>;
+    addProduct: (product: Omit<ProductInsert, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+    updateProduct: (id: string, updates: ProductUpdate) => Promise<void>;
+    deleteProduct: (id: string) => Promise<void>;
+    getProduct: (id: string) => Product | undefined;
 }
 
 export const useProductStore = create<ProductState>()((set, get) => ({
     products: [],
+    searchResults: [],
     isLoading: false,
+    isSearching: false,
     error: null,
+    
+    searchProducts: async (query: string) => {
+        if (!query.trim()) {
+            set({ searchResults: [], isSearching: false });
+            return;
+        }
+
+        set({ isSearching: true, error: null });
+        const supabase = createClient();
+        
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
+            .eq('status', 'Active')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            set({ error: error.message, isSearching: false });
+        } else {
+            set({ searchResults: data || [], isSearching: false });
+        }
+    },
     
     fetchProducts: async () => {
         set({ isLoading: true, error: null });

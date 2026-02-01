@@ -13,8 +13,10 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Search } from "lucide-react";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function CategoryPage() {
     const params = useParams();
@@ -22,6 +24,8 @@ export default function CategoryPage() {
     const { products, fetchProducts, isLoading } = useProductStore();
     const [isMounted, setIsMounted] = useState(false);
     const [sortBy, setSortBy] = useState("featured");
+    const [searchQuery, setSearchQuery] = useState("");
+    const debouncedQuery = useDebounce(searchQuery, 300);
     const productsRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -37,9 +41,22 @@ export default function CategoryPage() {
 
     const filteredProducts = useMemo(() => {
         let result = products.filter(product => {
-            if (category === "all") return true;
-            if (category === "best-sellers") return product.stock < 10; // Logic for best sellers
-            return product.category?.toLowerCase() === category?.toLowerCase();
+            // Category filter
+            let matchesCategory = false;
+            if (category === "all") matchesCategory = true;
+            else if (category === "best-sellers") matchesCategory = product.stock < 10;
+            else matchesCategory = product.category?.toLowerCase() === category?.toLowerCase();
+
+            // Search filter
+            if (!matchesCategory) return false;
+            if (!debouncedQuery) return true;
+
+            const query = debouncedQuery.toLowerCase();
+            return (
+                product.name.toLowerCase().includes(query) ||
+                product.description?.toLowerCase().includes(query) ||
+                product.category?.toLowerCase().includes(query)
+            );
         });
 
         if (sortBy === "price-low-high") {
@@ -51,7 +68,7 @@ export default function CategoryPage() {
         }
 
         return result;
-    }, [products, category, sortBy]);
+    }, [products, category, sortBy, debouncedQuery]);
 
     const scrollToProducts = () => {
         productsRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,7 +129,19 @@ export default function CategoryPage() {
                             <SlidersHorizontal size={14} />
                             Filters
                         </Button>
-                        <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                        
+                        {/* Search Input */}
+                        <div className="relative w-full md:w-64">
+                            <Input
+                                placeholder="Search products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-9 h-9 text-xs uppercase tracking-widest border-black/10 focus-visible:ring-black rounded-none"
+                            />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                        </div>
+
+                        <p className="text-xs text-muted-foreground uppercase tracking-widest hidden md:block">
                             {filteredProducts.length} Products
                         </p>
                     </div>

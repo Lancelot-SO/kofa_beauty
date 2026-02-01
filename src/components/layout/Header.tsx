@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard, Music2 as Tiktok } from "lucide-react";
+import { ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard, Music2 as Tiktok } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -10,6 +10,7 @@ import { useCartStore, getCartSubtotal } from "@/lib/store/useCartStore";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -80,11 +81,12 @@ export function Header() {
 
     return (
         <header className={`w-full fixed top-0 z-50 transition-all duration-500 ${scrolled ? "bg-black/90 backdrop-blur-md" : "bg-transparent"}`}>
+
+            
             {/* Top Banner - Subtle transparency */}
             {!scrolled && (
                 <div className="bg-black/80 text-white text-[10px] md:text-xs py-2 px-4 md:px-8 flex justify-between items-center tracking-[0.2em] border-b border-white/5">
                     <div className="flex items-center">
-                        <Search size={14} className="cursor-pointer hover:text-brand-rose transition-colors" />
                     </div>
                     <div className="flex-1 text-center">
                         <span className="uppercase font-medium">
@@ -104,7 +106,7 @@ export function Header() {
                 <div className="container mx-auto px-4 md:px-8 flex items-center justify-between">
 
                     {/* Left: Mobile Menu Trigger */}
-                    <div className="flex md:hidden items-center">
+                    <div className="flex md:hidden items-center gap-4">
                         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-white p-0 hover:bg-transparent hover:text-brand-rose">
@@ -147,6 +149,9 @@ export function Header() {
                                                             <LayoutDashboard size={18} /> Admin Panel
                                                         </Link>
                                                     )}
+                                                    <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm tracking-widest uppercase hover:text-brand-rose transition-colors">
+                                                        <User size={18} /> My Account
+                                                    </Link>
                                                     <button onClick={handleLogout} className="flex items-center gap-3 text-sm tracking-widest uppercase hover:text-brand-rose transition-colors text-left w-full">
                                                         <LogOut size={18} /> Logout
                                                     </button>
@@ -199,6 +204,12 @@ export function Header() {
 
                     {/* Right: Icons */}
                     <div className="flex items-center gap-5 md:gap-8 text-white">
+                        <div className="hidden md:block">
+                            <div className="flex items-center gap-5">
+                                <div className="w-[1px] h-4 bg-white/20"></div>
+                            </div>
+                        </div>
+
                         {user ? (
                             <div className="flex items-center gap-6">
                                 {profile?.role === 'admin' && (
@@ -221,6 +232,12 @@ export function Header() {
                                             <p className="text-[8px] uppercase tracking-widest text-muted-foreground">Logged in as</p>
                                             <p className="text-[10px] font-bold truncate">{user.email}</p>
                                         </div>
+                                        <Link 
+                                            href="/account"
+                                            className="w-full flex items-center gap-3 px-4 py-2 text-[10px] uppercase tracking-widest hover:bg-white/5 hover:text-brand-rose transition-colors rounded-md"
+                                        >
+                                            <LayoutDashboard size={14} /> My Account
+                                        </Link>
                                         <button 
                                             onClick={handleLogout}
                                             className="w-full flex items-center gap-3 px-4 py-2 text-[10px] uppercase tracking-widest hover:bg-white/5 hover:text-brand-rose transition-colors rounded-md"

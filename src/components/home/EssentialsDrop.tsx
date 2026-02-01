@@ -1,61 +1,27 @@
 import { ProductCard } from "@/components/product/ProductCard";
 import { Reveal } from "@/components/ui/Reveal";
+import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/supabase/types";
 
-export function EssentialsDrop() {
-    const products: Product[] = [
-        {
-            id: "1",
-            name: "12 Piece Brush Set",
-            description: "Essential brush set for all your makeup needs.",
-            price: 30.00,
-            sale_price: null,
-            image: "https://images.unsplash.com/photo-1631214500115-598fc2cb8d2d?q=80&w=2525&auto=format&fit=crop",
-            images: [],
-            stock: 45,
-            status: "Active",
-            category: "Brushes",
-            sku: "KB-BR-12",
-            weight: 0.5,
-            colors: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        },
-        {
-            id: "2",
-            name: "Long-Lasting Lipgloss",
-            description: "High-shine lipgloss that stays on all day.",
-            price: 18.00,
-            sale_price: null,
-            image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=2670&auto=format&fit=crop",
-            images: [],
-            stock: 12,
-            status: "Active",
-            category: "Lips",
-            sku: "KB-LIP-01",
-            weight: 0.1,
-            colors: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        },
-        {
-            id: "3",
-            name: "Cat Eye Strip Lashes",
-            description: "Dramatic cat-eye lashes for a bold look.",
-            price: 10.00,
-            sale_price: null,
-            image: "https://images.unsplash.com/photo-1645735123314-d11fcfdd0000?q=80&w=2620&auto=format&fit=crop",
-            images: [],
-            stock: 0,
-            status: "Out of Stock",
-            category: "Lashes",
-            sku: "KB-LASH-03",
-            weight: 0.05,
-            colors: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        }
-    ];
+async function getProducts(): Promise<Product[]> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('status', 'Active')
+        .order('created_at', { ascending: false })
+        .limit(3);
+    
+    if (error) {
+        console.error('Error fetching products:', error);
+        return [];
+    }
+    
+    return data || [];
+}
+
+export async function EssentialsDrop() {
+    const products = await getProducts();
 
     return (
         <section className="py-20 bg-brand-white">
