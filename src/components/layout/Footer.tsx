@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Twitter, Youtube, ArrowRight } from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube, ArrowRight, Music2 as Tiktok } from "lucide-react";
 
 export function Footer() {
     return (
@@ -26,6 +26,7 @@ export function Footer() {
                             {[
                                 { icon: Instagram, href: "#" },
                                 { icon: Facebook, href: "#" },
+                                { icon: Tiktok, href: "https://www.tiktok.com/tag/liyadances" },
                                 { icon: Youtube, href: "#" },
                                 { icon: Twitter, href: "#" }
                             ].map((social, i) => (

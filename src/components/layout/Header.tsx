@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard, Music2 as Tiktok } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -92,6 +92,7 @@ export function Header() {
                         </span>
                     </div>
                     <div className="hidden md:flex gap-4 items-center opacity-70">
+                        <Link href="https://www.tiktok.com/tag/liyadances" target="_blank" className="hover:text-brand-rose transition-colors"><Tiktok size={14} /></Link>
                         <Link href="#" className="hover:text-brand-rose transition-colors"><Instagram size={12} /></Link>
                         <Link href="#" className="hover:text-brand-rose transition-colors"><Facebook size={12} /></Link>
                     </div>
@@ -157,6 +158,7 @@ export function Header() {
                                             </Link>
                                         )}
                                         <div className="flex gap-6 opacity-50">
+                                            <Link href="https://www.tiktok.com/tag/liyadances" target="_blank"><Tiktok size={20} /></Link>
                                             <Instagram size={20} />
                                             <Facebook size={20} />
                                             <Twitter size={20} />
