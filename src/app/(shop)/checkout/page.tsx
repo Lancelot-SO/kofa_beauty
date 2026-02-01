@@ -29,6 +29,7 @@ export default function CheckoutPage() {
     const [isMounted, setIsMounted] = useState(false);
     const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Success
     const [isProcessing, setIsProcessing] = useState(false);
+    const [countdown, setCountdown] = useState(10);
     const router = useRouter();
 
     const tax = subtotal * TAX_RATE;
@@ -80,6 +81,16 @@ export default function CheckoutPage() {
         fetchProfile();
     }, []);
 
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (step === 3 && countdown > 0) {
+            timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        } else if (step === 3 && countdown === 0) {
+            router.push("/");
+        }
+        return () => clearTimeout(timer);
+    }, [step, countdown, router]);
+
     if (!isMounted) return null;
 
     if (items.length === 0 && step !== 3) {
@@ -130,11 +141,16 @@ export default function CheckoutPage() {
                         </div>
                     </Reveal>
                     <Reveal delay={0.4}>
-                        <Link href="/">
-                            <Button variant="premium-dark" size="lg" className="px-12">
-                                Return to Homepage
-                            </Button>
-                        </Link>
+                        <div className="space-y-6 pt-4">
+                            <Link href="/">
+                                <Button variant="premium-dark" size="lg" className="px-12 w-full sm:w-auto">
+                                    Return to Homepage
+                                </Button>
+                            </Link>
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground animate-pulse">
+                                Redirecting to home in {countdown} seconds...
+                            </p>
+                        </div>
                     </Reveal>
                 </div>
             </div>
