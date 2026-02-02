@@ -14,11 +14,7 @@ interface ProductState {
     searchResults: Product[];
     isSearching: boolean;
     searchProducts: (query: string) => Promise<void>;
-    fetchProducts: () => Promise<void>;
-    addProduct: (product: Omit<ProductInsert, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
-    updateProduct: (id: string, updates: ProductUpdate) => Promise<void>;
-    deleteProduct: (id: string) => Promise<void>;
-    getProduct: (id: string) => Product | undefined;
+
 }
 
 export const useProductStore = create<ProductState>()((set, get) => ({
