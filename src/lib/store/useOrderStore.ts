@@ -14,7 +14,7 @@ interface OrderState {
     isLoading: boolean;
     error: string | null;
     fetchOrders: () => Promise<void>;
-    addOrder: (order: Omit<OrderInsert, 'id' | 'order_number' | 'created_at' | 'updated_at'>, items: Omit<OrderItemInsert, 'id' | 'order_id' | 'created_at'>[]) => Promise<OrderWithItems>;
+    addOrder: (order: Omit<OrderInsert, 'id' | 'created_at' | 'updated_at'> & { order_number?: string }, items: Omit<OrderItemInsert, 'id' | 'order_id' | 'created_at'>[]) => Promise<OrderWithItems>;
     updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
     deleteOrder: (id: string) => Promise<void>;
     getOrder: (id: string) => OrderWithItems | undefined;
@@ -63,11 +63,13 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
         set({ isLoading: true, error: null });
         const supabase = createClient();
         
-        // Generate order number
-        // Generate unique order number: KB-timestamp-random
-        const timestamp = Date.now().toString().slice(-6);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        const orderNumber = `KB-${timestamp}-${random}`;
+        // Generate order number if not provided
+        let orderNumber = order.order_number;
+        if (!orderNumber) {
+            const timestamp = Date.now().toString().slice(-6);
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            orderNumber = `KB-${timestamp}-${random}`;
+        }
         
         // Insert order
         const { data: orderData, error: orderError } = await supabase

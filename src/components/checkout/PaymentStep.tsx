@@ -29,17 +29,29 @@ export default function PaymentStep({
     const { addOrder } = useOrderStore();
     const { clearCart } = useCartStore();
 
+    const [orderNumber] = useState(() => {
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `KB-${timestamp}-${random}`;
+    });
+
     const paystackConfig = {
         email: formData.email,
         amount: Math.round(total * 100),
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
         currency: "GHS",
+        reference: orderNumber, // Use our generated order number as Paystack reference
         metadata: {
             custom_fields: [
                 {
                     display_name: "Customer Name",
                     variable_name: "customer_name",
                     value: `${formData.firstName} ${formData.lastName}`
+                },
+                {
+                    display_name: "Order Number",
+                    variable_name: "order_number",
+                    value: orderNumber
                 }
             ]
         }
@@ -47,16 +59,17 @@ export default function PaymentStep({
 
     const initializePayment = usePaystackPayment(paystackConfig);
 
-    const handleOnSuccess = async (reference: any) => {
+    const handlePayment = async () => {
         setIsProcessing(true);
         try {
-            // 1. Create order in 'Processing' status since payment is confirmed
+            // 1. Create order immediately as 'Pending Payment'
             const orderPayload = {
                 customer_id: profileId,
                 customer_name: `${formData.firstName} ${formData.lastName}`,
                 customer_email: formData.email,
                 total: total,
-                status: 'Processing' as const,
+                status: 'Pending Payment' as const,
+                order_number: orderNumber // Explicitly set the order number
             };
 
             const orderItemsPayload = items.map(item => ({
@@ -66,38 +79,64 @@ export default function PaymentStep({
                 price: item.product.price,
             }));
 
+            // Create the order in DB
             const newOrder = await addOrder(orderPayload, orderItemsPayload);
-            console.log("Order created after payment:", newOrder.order_number);
+            console.log("Pending order created:", newOrder.order_number);
 
-            // 2. Send confirmation email
-            await fetch("/api/verify-payment", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    reference: reference.reference,
-                    orderDetails: {
-                        email: formData.email,
-                        customerName: `${formData.firstName} ${formData.lastName}`,
-                        orderNumber: newOrder.order_number,
-                        items: items.map(item => ({
-                            name: item.product.name,
-                            quantity: item.quantity,
-                            price: item.product.price,
-                        })),
-                        total: total,
-                        shippingAddress: `${formData.address}, ${formData.apartment ? formData.apartment + ', ' : ''}${formData.city}, ${formData.postcode}`,
+            // 2. Initialize Payment
+            // We pass a success handler that knows about the order we just created
+            initializePayment({
+                onSuccess: async (reference: any) => {
+                    // Payment Successful!
+                    try {
+                        console.log("Payment successful, updating order...");
+                        const { updateOrderStatus } = useOrderStore.getState();
+                        
+                        // 3. Update order status to Processing
+                        await updateOrderStatus(newOrder.id, 'Processing');
+
+                        // 4. Send Confirmation Email
+                        await fetch("/api/verify-payment", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                reference: reference.reference,
+                                orderDetails: {
+                                    email: formData.email,
+                                    customerName: `${formData.firstName} ${formData.lastName}`,
+                                    orderNumber: newOrder.order_number,
+                                    items: items.map(item => ({
+                                        name: item.product.name,
+                                        quantity: item.quantity,
+                                        price: item.product.price,
+                                    })),
+                                    total: total,
+                                    shippingAddress: `${formData.address}, ${formData.apartment ? formData.apartment + ', ' : ''}${formData.city}, ${formData.postcode}`,
+                                }
+                            }),
+                        });
+
+                        clearCart();
+                        onSuccess();
+                        toast.success("Order placed successfully!");
+                    } catch (err) {
+                        console.error("Post-payment update error:", err);
+                        toast.error("Payment received, but order update failed. Please contact support.");
+                    } finally {
+                        setIsProcessing(false);
                     }
-                }),
+                },
+                onClose: () => {
+                    // Payment Cancelled
+                    setIsProcessing(false);
+                    toast.info("Payment cancelled. Your order has been saved as Pending.");
+                }
             });
 
-            clearCart();
-            onSuccess();
-            toast.success("Order placed successfully!");
         } catch (err) {
-            console.error("Post-payment error:", err);
-            toast.error("Payment successful, but order recording failed. Please contact support with reference: " + reference.reference);
-        } finally {
+            console.error("Order creation error:", err);
             setIsProcessing(false);
+            toast.error("Failed to initialize order. Please try again.");
         }
     };
 
@@ -114,10 +153,7 @@ export default function PaymentStep({
                 </Button>
             ) : (
                 <Button 
-                    onClick={() => {
-                        // @ts-ignore
-                        initializePayment(handleOnSuccess, handleOnClose);
-                    }}
+                    onClick={handlePayment}
                     className="w-full h-14 bg-black text-white hover:bg-neutral-800 transition-colors uppercase text-[10px] tracking-[0.3em] font-bold flex items-center justify-center gap-3"
                 >
                     Complete Purchase
