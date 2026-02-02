@@ -69,7 +69,12 @@ export default function PaymentStep({
                 customer_email: formData.email,
                 total: total,
                 status: 'Pending Payment' as const,
-                order_number: orderNumber // Explicitly set the order number
+                order_number: orderNumber,
+                phone: formData.phone,
+                address: formData.address,
+                apartment: formData.apartment || null,
+                city: formData.city,
+                postcode: formData.postcode,
             };
 
             const orderItemsPayload = items.map(item => ({
@@ -79,15 +84,13 @@ export default function PaymentStep({
                 price: item.product.price,
             }));
 
-            // Create the order in DB
+            // Create the order in DB first
             const newOrder = await addOrder(orderPayload, orderItemsPayload);
             console.log("Pending order created:", newOrder.order_number);
 
-            // 2. Initialize Payment
-            // We pass a success handler that knows about the order we just created
+            // 2. Initialize Paystack Payment
             initializePayment({
                 onSuccess: async (reference: any) => {
-                    // Payment Successful!
                     try {
                         console.log("Payment successful, updating order...");
                         const { updateOrderStatus } = useOrderStore.getState();
@@ -127,7 +130,6 @@ export default function PaymentStep({
                     }
                 },
                 onClose: () => {
-                    // Payment Cancelled
                     setIsProcessing(false);
                     toast.info("Payment cancelled. Your order has been saved as Pending.");
                 }
@@ -140,23 +142,19 @@ export default function PaymentStep({
         }
     };
 
-    const handleOnClose = () => {
-        toast.info("Payment cancelled");
-    };
-
     return (
         <div className="flex flex-col gap-4">
             {isProcessing ? (
                 <Button disabled variant="premium-dark" size="lg" className="w-full gap-3">
                     <Loader2 className="animate-spin" size={16} />
-                    Processing Order...
+                    Processing...
                 </Button>
             ) : (
                 <Button 
                     onClick={handlePayment}
                     className="w-full h-14 bg-black text-white hover:bg-neutral-800 transition-colors uppercase text-[10px] tracking-[0.3em] font-bold flex items-center justify-center gap-3"
                 >
-                    Complete Purchase
+                    Confirm Order
                 </Button>
             )}
         </div>

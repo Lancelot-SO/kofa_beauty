@@ -104,6 +104,11 @@ export interface Database {
           customer_email: string
           status: 'Pending Payment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
           total: number
+          phone: string | null
+          address: string | null
+          apartment: string | null
+          city: string | null
+          postcode: string | null
           created_at: string
           updated_at: string
         }
@@ -115,6 +120,11 @@ export interface Database {
           customer_email: string
           status?: 'Pending Payment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
           total: number
+          phone?: string | null
+          address?: string | null
+          apartment?: string | null
+          city?: string | null
+          postcode?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -126,6 +136,11 @@ export interface Database {
           customer_email?: string
           status?: 'Pending Payment' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
           total?: number
+          phone?: string | null
+          address?: string | null
+          apartment?: string | null
+          city?: string | null
+          postcode?: string | null
           created_at?: string
           updated_at?: string
         }

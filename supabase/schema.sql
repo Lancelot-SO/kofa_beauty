@@ -64,6 +64,11 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_email TEXT NOT NULL,
     status TEXT DEFAULT 'Pending Payment' CHECK (status IN ('Pending Payment', 'Processing', 'Shipped', 'Delivered', 'Cancelled')),
     total DECIMAL(10,2) NOT NULL,
+    phone TEXT,
+    address TEXT,
+    apartment TEXT,
+    city TEXT,
+    postcode TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

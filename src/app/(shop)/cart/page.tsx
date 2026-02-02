@@ -138,9 +138,9 @@ export default function CartPage() {
                                         <span>Subtotal</span>
                                         <span className="text-black font-medium">GH₵{subtotal.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">
-                                        <span>Shipping</span>
-                                        <span className="text-[#B88E2F] font-bold">GH₵{SHIPPING_FEE.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
+                                        <span>Delivery Fee (Pay to Rider)</span>
+                                        <span className="text-[#B88E2F] font-bold italic">TBD</span>
                                     </div>
                                     <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">
                                         <span>Estimated Tax</span>
@@ -163,7 +163,7 @@ export default function CartPage() {
                                 </Link>
 
                                 <div className="space-y-4 pt-4">
-                                    <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">Secure Checkout Powered by Paystack</p>
+                                    <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">Premium Beauty Delivered to Your Door</p>
                                     <div className="flex justify-center gap-4 opacity-30 grayscale">
                                         {/* Icons placeholder */}
                                         <div className="w-8 h-5 bg-black/20" />

@@ -298,7 +298,7 @@ export default function CheckoutPage() {
                                             <div className="p-4 border border-black flex justify-between items-center bg-secondary/10">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-4 h-4 rounded-full border-4 border-black" />
-                                                    <div className="text-xs uppercase tracking-widest">Standard Shipping</div>
+                                                    <div className="text-[10px] uppercase tracking-widest font-bold">Delivery Arrangement</div>
                                                 </div>
                                                 <span className="text-xs font-bold uppercase tracking-widest text-[#B88E2F]">GH₵{SHIPPING_FEE.toFixed(2)}</span>
                                             </div>
@@ -313,8 +313,8 @@ export default function CheckoutPage() {
                                                 </div>
                                             </div>
                                             <div className="p-6 border border-border/60 rounded-none bg-secondary/5 text-center space-y-4">
-                                                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                                                    Payment is processed securely by Paystack
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-relaxed">
+                                                    Payment for products & delivery will be processed upon arrival. Delivery fee is settled directly with the rider.
                                                 </p>
                                                 <div className="flex justify-center gap-4 opacity-50 grayscale">
                                                     {/* Payment Logos can go here */}
@@ -383,9 +383,9 @@ export default function CheckoutPage() {
                                         <span>Subtotal</span>
                                         <span className="text-black font-medium">GH₵{subtotal.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
-                                        <span>Shipping</span>
-                                        <span className="text-[#B88E2F] font-bold">GH₵{SHIPPING_FEE.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
+                                        <span>Delivery Fee (Pay to Rider)</span>
+                                        <span className="text-[#B88E2F] font-bold italic">TBD</span>
                                     </div>
                                     <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
                                         <span>Tax</span>

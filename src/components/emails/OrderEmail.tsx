@@ -45,7 +45,7 @@ export const OrderEmail = ({
                 <Section style={section}>
                     <Text style={text}>Hi {customerName},</Text>
                     <Text style={text}>
-                        Thank you for your order! We're processing it now and will notify you when it ships.
+                        Thank you for your order! We're processing it now. Please note that the delivery fee is to be settled directly with the rider upon arrival.
                     </Text>
                     <Text style={orderLabel}>Order Number: <span style={orderValue}>{orderNumber}</span></Text>
                 </Section>
@@ -72,7 +72,7 @@ export const OrderEmail = ({
                     </Row>
                 </Section>
                 <Section style={section}>
-                    <Heading style={subHeading}>Shipping Address</Heading>
+                    <Heading style={subHeading}>Delivery Address</Heading>
                     <Text style={text}>{shippingAddress}</Text>
                 </Section>
                 <Section style={footer}>
