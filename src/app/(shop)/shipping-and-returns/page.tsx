@@ -15,10 +15,10 @@ export default function ShippingPage() {
         >
             <h3>Shipping Rates</h3>
             <p>
-                We strive to keep shipping affordable. We effectively offer a <strong>Flat Rate of GHS 25.00</strong> for delivery within Accra.
+                We strive to keep shipping affordable. We effectively offer <strong>Free Delivery</strong> within Accra.
             </p>
             <ul>
-                <li><strong>Accra Delivery:</strong> GHS 25.00 (Flat Rate)</li>
+                <li><strong>Accra Delivery:</strong> Free</li>
                 <li><strong>Greater Accra (Outside City Center):</strong> Calculated at checkout based on distance.</li>
                 <li><strong>Other Regions:</strong> Calculated at checkout via courier services.</li>
             </ul>

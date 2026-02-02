@@ -90,7 +90,7 @@ export function Header() {
                     </div>
                     <div className="flex-1 text-center">
                         <span className="uppercase font-medium">
-                            GHS 25 Flat Rate Shipping on all orders
+                            Free Shipping on all orders
                         </span>
                     </div>
                     <div className="hidden md:flex gap-4 items-center opacity-70">
