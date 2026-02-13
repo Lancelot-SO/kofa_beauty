@@ -135,10 +135,11 @@ export default function PaymentStep({
                 }
             });
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Order creation error:", err);
             setIsProcessing(false);
-            toast.error("Failed to initialize order. Please try again.");
+            const errorMessage = err?.message || "Please try again.";
+            toast.error(`Failed to initialize order: ${errorMessage}`);
         }
     };
 

@@ -71,16 +71,33 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
             orderNumber = `KB-${timestamp}-${random}`;
         }
         
+        console.log("Creating order with number:", orderNumber);
+        
         // Insert order
+        // Use a more explicit check for customer_id to handle null correctly
+        const orderDataToInsert = { 
+            ...order, 
+            order_number: orderNumber,
+            customer_id: order.customer_id || null
+        };
+
         const { data: orderData, error: orderError } = await supabase
             .from('orders')
-            .insert({ ...order, order_number: orderNumber })
+            .insert(orderDataToInsert)
             .select()
             .single();
         
         if (orderError) {
+            console.error("Supabase order insert error:", orderError);
             set({ error: orderError.message, isLoading: false });
             throw orderError;
+        }
+
+        if (!orderData) {
+            const noDataError = new Error("Order created but no data returned. This might be due to RLS select restrictions.");
+            console.error(noDataError.message);
+            set({ error: noDataError.message, isLoading: false });
+            throw noDataError;
         }
         
         // Insert order items
@@ -95,7 +112,10 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
             .select();
         
         if (itemsError) {
+            console.error("Supabase order items insert error:", itemsError);
             set({ error: itemsError.message, isLoading: false });
+            // Note: We might want to handle partial failure (order created but items failed)
+            // though cascade delete isn't ideal here. For now, just throw.
             throw itemsError;
         }
         
