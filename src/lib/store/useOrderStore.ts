@@ -71,57 +71,40 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
             orderNumber = `KB-${timestamp}-${random}`;
         }
         
-        console.log("Creating order with number:", orderNumber);
+        console.log("Creating order through RPC with number:", orderNumber);
         
-        // Insert order
-        // Use a more explicit check for customer_id to handle null correctly
-        const orderDataToInsert = { 
+        const orderPayload = { 
             ...order, 
             order_number: orderNumber,
             customer_id: order.customer_id || null
         };
 
+        // Call our secure RPC function to create order and items in one go
         const { data: orderData, error: orderError } = await supabase
-            .from('orders')
-            .insert(orderDataToInsert)
-            .select()
-            .single();
+            .rpc('place_order', {
+                p_order: orderPayload,
+                p_items: items
+            });
         
         if (orderError) {
-            console.error("Supabase order insert error:", orderError);
+            console.error("Supabase RPC place_order error:", orderError);
             set({ error: orderError.message, isLoading: false });
             throw orderError;
         }
 
         if (!orderData) {
-            const noDataError = new Error("Order created but no data returned. This might be due to RLS select restrictions.");
+            const noDataError = new Error("Order creation failed - no data returned from RPC.");
             console.error(noDataError.message);
             set({ error: noDataError.message, isLoading: false });
             throw noDataError;
         }
-        
-        // Insert order items
-        const orderItems = items.map(item => ({
-            ...item,
-            order_id: orderData.id
-        }));
-        
-        const { data: itemsData, error: itemsError } = await supabase
-            .from('order_items')
-            .insert(orderItems)
-            .select();
-        
-        if (itemsError) {
-            console.error("Supabase order items insert error:", itemsError);
-            set({ error: itemsError.message, isLoading: false });
-            // Note: We might want to handle partial failure (order created but items failed)
-            // though cascade delete isn't ideal here. For now, just throw.
-            throw itemsError;
-        }
-        
+
         const newOrder: OrderWithItems = {
             ...orderData,
-            items: itemsData || []
+            // Assuming order_items are fetched again or included in the result
+            // Our place_order RPC doesn't return items currently, but we can re-fetch if admin
+            // For now, we'll manually attach them from our local data to update UI
+            items: items.map((item, idx) => ({ ...item, id: `temp-${idx}`, order_id: orderData.id } as OrderItem))
         };
         
         set((state) => ({
@@ -136,24 +119,36 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
         set({ isLoading: true, error: null });
         const supabase = createClient();
         
-        const { data, error } = await supabase
-            .from('orders')
-            .update({ status, updated_at: new Date().toISOString() })
-            .eq('id', id)
-            .select()
-            .single();
-        
-        if (error) {
-            set({ error: error.message, isLoading: false });
-            throw error;
+        // If status is 'Processing', we use our secure RPC instead of direct update
+        // to handle the payment confirmation bypass
+        if (status === 'Processing') {
+            const { error } = await supabase.rpc('confirm_payment', { p_order_id: id });
+            if (error) {
+                set({ error: error.message, isLoading: false });
+                throw error;
+            }
         } else {
-            set((state) => ({
-                orders: state.orders.map((o) => 
-                    o.id === id ? { ...o, ...data } : o
-                ),
-                isLoading: false
-            }));
+            // For other updates, use direct table update (likely only for admins)
+            const { data, error } = await supabase
+                .from('orders')
+                .update({ status, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            
+            if (error) {
+                set({ error: error.message, isLoading: false });
+                throw error;
+            }
         }
+
+        // Optimistically update local state if we don't have fresh DB data
+        set((state) => ({
+            orders: state.orders.map((o) => 
+                o.id === id ? { ...o, status, updated_at: new Date().toISOString() } : o
+            ),
+            isLoading: false
+        }));
     },
     
     deleteOrder: async (id) => {
