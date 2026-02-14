@@ -47,7 +47,7 @@ export async function POST(request: Request) {
                         }),
                     });
                 } catch (emailError) {
-                    console.error('Failed to send order email:', emailError);
+
                     // Don't fail the whole request if email fails
                 }
             }
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
             );
         }
     } catch (error: any) {
-        console.error('Paystack verification error:', error);
+
         return NextResponse.json(
             { message: 'Internal server error', error: error.message },
             { status: 500 }

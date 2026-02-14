@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest) {
   // Protect admin routes - only allow admin role
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
-      console.log('[Middleware] No user detected for admin route. Redirecting to /login');
+
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
@@ -52,14 +52,14 @@ export async function updateSession(request: NextRequest) {
       .single()
 
     if (profileError || !profile || profile.role !== 'admin') {
-      console.error(`[Middleware] Unauthorized access attempt by ${user.email} to ${request.nextUrl.pathname}. Profile:`, profile);
+
       const url = request.nextUrl.clone()
       url.pathname = '/'
       url.searchParams.set('error', 'unauthorized')
       return NextResponse.redirect(url)
     }
     
-    console.log(`[Middleware] Admin access granted for ${user.email}`);
+
   }
 
   // Redirect authenticated users away from auth pages

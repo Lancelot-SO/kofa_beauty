@@ -33,7 +33,7 @@ export default function PromotionsPage() {
             const uniqueCategories = Array.from(new Set(data?.map(p => p.category) || [])).filter(Boolean).sort();
             setCategories(uniqueCategories);
         } catch (error) {
-            console.error("Error fetching categories:", error);
+
             toast.error("Failed to load categories");
         } finally {
             setIsFetching(false);
@@ -104,7 +104,7 @@ export default function PromotionsPage() {
                 };
             });
 
-            console.log("Applying promotion updates:", updates);
+
 
             const { error: updateError } = await supabase
                 .from('products')
@@ -117,7 +117,7 @@ export default function PromotionsPage() {
             setDurationValue("");
             
         } catch (error: any) {
-            console.error("Error applying promotion:", error);
+
             toast.error(`Failed to apply promotion: ${error.message}`);
         } finally {
             setIsLoading(false);
@@ -146,7 +146,7 @@ export default function PromotionsPage() {
 
             toast.success(`Removed promotions from ${selectedCategory}`);
         } catch (error: any) {
-            console.error("Error clearing promotion:", error);
+
             toast.error(`Failed to clear promotion: ${error.message}`);
         } finally {
             setIsLoading(false);

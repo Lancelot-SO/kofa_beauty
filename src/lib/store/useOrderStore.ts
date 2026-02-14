@@ -71,7 +71,7 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
             orderNumber = `KB-${timestamp}-${random}`;
         }
         
-        console.log("Creating order through RPC with number:", orderNumber);
+
         
         const orderPayload = { 
             ...order, 
@@ -85,16 +85,14 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
                 p_order: orderPayload,
                 p_items: items
             });
-        
+
         if (orderError) {
-            console.error("Supabase RPC place_order error:", orderError);
             set({ error: orderError.message, isLoading: false });
             throw orderError;
         }
 
         if (!orderData) {
             const noDataError = new Error("Order creation failed - no data returned from RPC.");
-            console.error(noDataError.message);
             set({ error: noDataError.message, isLoading: false });
             throw noDataError;
         }

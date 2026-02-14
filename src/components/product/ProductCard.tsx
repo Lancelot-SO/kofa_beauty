@@ -31,15 +31,7 @@ export function ProductCard({ product }: ProductCardProps) {
         setTimeout(() => setIsAdded(false), 2000);
     };
 
-    // Diagnostic log for development
-    if (product.sale_price) {
-        console.log(`Product "${product.name}" sale info:`, {
-            price: product.price,
-            sale_price: product.sale_price,
-            isSaleActive: isSaleActive(product),
-            sale_end_date: product.sale_end_date
-        });
-    }
+
 
     return (
         <motion.div

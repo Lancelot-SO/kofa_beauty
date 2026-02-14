@@ -87,13 +87,13 @@ export default function PaymentStep({
 
             // Create the order in DB first
             const newOrder = await addOrder(orderPayload, orderItemsPayload);
-            console.log("Pending order created:", newOrder.order_number);
+
 
             // 2. Initialize Paystack Payment
             initializePayment({
                 onSuccess: async (reference: any) => {
                     try {
-                        console.log("Payment successful, updating order...");
+
                         const { updateOrderStatus } = useOrderStore.getState();
                         
                         // 3. Update order status to Processing
@@ -124,7 +124,7 @@ export default function PaymentStep({
                         onSuccess();
                         toast.success("Order placed successfully!");
                     } catch (err) {
-                        console.error("Post-payment update error:", err);
+
                         toast.error("Payment received, but order update failed. Please contact support.");
                     } finally {
                         setIsProcessing(false);
@@ -137,7 +137,7 @@ export default function PaymentStep({
             });
 
         } catch (err: any) {
-            console.error("Order creation error:", err);
+
             setIsProcessing(false);
             const errorMessage = err?.message || "Please try again.";
             toast.error(`Failed to initialize order: ${errorMessage}`);

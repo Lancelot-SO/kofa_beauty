@@ -59,7 +59,7 @@ export function ProfileForm({ initialData, userId }: ProfileFormProps) {
             toast.success("Profile updated successfully");
             router.refresh();
         } catch (error) {
-            console.error(error);
+
             toast.error("Failed to update profile");
         } finally {
             setIsLoading(false);

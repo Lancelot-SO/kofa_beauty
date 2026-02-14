@@ -13,7 +13,7 @@ async function getProducts(): Promise<Product[]> {
         .limit(3);
     
     if (error) {
-        console.error('Error fetching products:', error);
+
         return [];
     }
     

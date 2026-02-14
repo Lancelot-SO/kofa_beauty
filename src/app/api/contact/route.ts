@@ -49,7 +49,7 @@ ${message}
 
         return NextResponse.json({ success: true, da: data });
     } catch (error) {
-        console.error('Contact form error:', error);
+
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

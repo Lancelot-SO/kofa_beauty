@@ -130,7 +130,7 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                 form.setValue("image", newImages[0]);
             }
         } catch (error) {
-            console.error(error);
+
             toast.error("Failed to upload image");
         } finally {
             setUploadingIndex(null);
@@ -186,7 +186,7 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
             }
             if (onSuccess) onSuccess();
         } catch (error: any) {
-            console.error("Submission error details:", error);
+
             const errorMessage = error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
             toast.error(`Something went wrong: ${errorMessage}`);
         }

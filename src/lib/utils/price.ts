@@ -24,7 +24,7 @@ export function isSaleActive(product: Product): boolean {
             // If the date is valid and in the future, sale is active
             return !isNaN(endDate.getTime()) && now <= endDate;
         } catch (e) {
-            console.error("Error parsing sale_end_date:", e);
+
             return true; // Fallback to true if date is present but unparseable
         }
     }
