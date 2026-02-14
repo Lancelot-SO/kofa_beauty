@@ -32,7 +32,8 @@ const productSchema = z.object({
     sku: z.string().min(2, "SKU must be at least 2 characters"),
     category: z.enum(["Face", "Lips", "Eyes", "Sets"]),
     price: z.number().min(0.01, "Price must be greater than 0"),
-    sale_price: z.number().optional(),
+    sale_price: z.number().nullable().optional(),
+    sale_end_date: z.string().nullable().optional(),
     stock: z.number().min(0, "Stock cannot be negative"),
     weight: z.number().optional(),
     status: z.enum(["Active", "Draft", "Out of Stock"]),
@@ -73,7 +74,8 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
             sku: "",
             category: "Face",
             price: 0,
-            sale_price: 0,
+            sale_price: null,
+            sale_end_date: null,
             stock: 0,
             weight: 0,
             status: "Active",
@@ -149,7 +151,8 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                 sku: initialData.sku,
                 category: initialData.category as "Face" | "Lips" | "Eyes" | "Sets",
                 price: Number(initialData.price),
-                sale_price: initialData.sale_price ? Number(initialData.sale_price) : 0,
+                sale_price: initialData.sale_price ? Number(initialData.sale_price) : null,
+                sale_end_date: initialData.sale_end_date || null,
                 stock: initialData.stock,
                 weight: initialData.weight ? Number(initialData.weight) : 0,
                 status: initialData.status,
@@ -164,9 +167,11 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
 
     const onSubmit = async (values: ProductFormValues) => {
         try {
-            // Ensure images array is set
+            // Ensure images array is set and handle sale price nulls
             const submissionData = {
                 ...values,
+                sale_price: values.sale_price || null,
+                sale_end_date: values.sale_end_date || null,
                 images: values.images?.length ? values.images : (values.image ? [values.image] : []),
             };
 
@@ -351,7 +356,21 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                                     name="sale_price"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-sm font-semibold text-slate-700">Sale Price (GH₵)</FormLabel>
+                                            <div className="flex justify-between items-center">
+                                                <FormLabel className="text-sm font-semibold text-slate-700">Sale Price (GH₵)</FormLabel>
+                                                {field.value && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            form.setValue("sale_price", null);
+                                                            form.setValue("sale_end_date", null);
+                                                        }}
+                                                        className="text-[10px] text-red-500 hover:text-red-600 font-bold uppercase tracking-wider"
+                                                    >
+                                                        Clear Sale
+                                                    </button>
+                                                )}
+                                            </div>
                                             <FormControl>
                                                 <Input 
                                                     type="number" 
@@ -359,7 +378,25 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                                                     placeholder="0.00 (optional)" 
                                                     {...field} 
                                                     value={field.value ?? ''}
-                                                    onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                                                    onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
+                                                    className="bg-white border-slate-200 h-11" 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="sale_end_date"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-semibold text-slate-700">Sale End Date</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    type="datetime-local"
+                                                    {...field} 
+                                                    value={field.value ?? ''}
                                                     className="bg-white border-slate-200 h-11" 
                                                 />
                                             </FormControl>

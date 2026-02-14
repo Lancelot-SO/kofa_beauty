@@ -53,9 +53,9 @@ export default function CategoryPage() {
 
             const query = debouncedQuery.toLowerCase();
             return (
-                product.name.toLowerCase().includes(query) ||
-                product.description?.toLowerCase().includes(query) ||
-                product.category?.toLowerCase().includes(query)
+                (product.name || "").toLowerCase().includes(query) ||
+                (product.description || "").toLowerCase().includes(query) ||
+                (product.category || "").toLowerCase().includes(query)
             );
         });
 

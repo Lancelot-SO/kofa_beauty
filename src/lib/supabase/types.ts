@@ -53,6 +53,7 @@ export interface Database {
           status: 'Active' | 'Draft' | 'Out of Stock'
           image: string | null
           sale_price: number | null
+          sale_end_date: string | null
           weight: number | null
           colors: string[] | null
           images: string[] | null
@@ -70,6 +71,7 @@ export interface Database {
           status?: 'Active' | 'Draft' | 'Out of Stock'
           image?: string | null
           sale_price?: number | null
+          sale_end_date?: string | null
           weight?: number | null
           colors?: string[] | null
           images?: string[] | null
@@ -88,6 +90,7 @@ export interface Database {
           status?: 'Active' | 'Draft' | 'Out of Stock'
           image?: string | null
           sale_price?: number | null
+          sale_end_date?: string | null
           weight?: number | null
           colors?: string[] | null
           images?: string[] | null

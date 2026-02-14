@@ -13,7 +13,8 @@ import {
     Settings,
     LogOut,
     Menu,
-    X
+    X,
+    Percent
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -41,6 +42,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
         { href: "/admin/customers", label: "Customers", icon: Users },
         { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
+        { href: "/admin/promotions", label: "Promotions", icon: Percent },
         { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
 

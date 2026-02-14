@@ -7,6 +7,7 @@ import { usePaystackPayment } from "react-paystack";
 import { toast } from "sonner";
 import { useOrderStore } from "@/lib/store/useOrderStore";
 import { useCartStore } from "@/lib/store/useCartStore";
+import { getEffectivePrice } from "@/lib/utils/price";
 
 interface PaymentStepProps {
     formData: any;
@@ -81,7 +82,7 @@ export default function PaymentStep({
                 product_id: item.product.id,
                 product_name: item.product.name,
                 quantity: item.quantity,
-                price: item.product.price,
+                price: getEffectivePrice(item.product),
             }));
 
             // Create the order in DB first
@@ -111,7 +112,7 @@ export default function PaymentStep({
                                     items: items.map(item => ({
                                         name: item.product.name,
                                         quantity: item.quantity,
-                                        price: item.product.price,
+                                        price: getEffectivePrice(item.product),
                                     })),
                                     total: total,
                                     shippingAddress: `${formData.address}, ${formData.apartment ? formData.apartment + ', ' : ''}${formData.city}, ${formData.postcode}`,

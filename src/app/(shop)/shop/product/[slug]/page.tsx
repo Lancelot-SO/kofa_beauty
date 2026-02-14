@@ -21,17 +21,50 @@ import { Reveal } from "@/components/ui/Reveal";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { isSaleActive } from "@/lib/utils/price";
 
 // --- Components ---
 
-function CountdownTimer() {
+function SaleTimer({ endDate }: { endDate: string }) {
+    const [timeLeft, setTimeLeft] = useState<{days: number, hours: number, minutes: number, seconds: number} | null>(null);
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const difference = +new Date(endDate) - +new Date();
+            let timeLeft = null;
+
+            if (difference > 0) {
+                timeLeft = {
+                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                    minutes: Math.floor((difference / 1000 / 60) % 60),
+                    seconds: Math.floor((difference / 1000) % 60),
+                };
+            }
+            return timeLeft;
+        };
+
+        setTimeLeft(calculateTimeLeft());
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [endDate]);
+
+    if (!timeLeft) return null;
+
     return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-slate-50 p-3 rounded-lg border border-slate-100 mb-6">
-            <Clock size={16} className="text-slate-400" />
-            <span>Order in <span className="font-semibold text-slate-900">02:30:25</span> to get next day delivery</span>
+        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 mb-6 font-medium">
+            <Clock size={16} className="text-red-500" />
+            <span>
+                Sale ends in: <span className="font-bold">{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
+            </span>
         </div>
     );
 }
+
+
 
 function AccordionItem({ title, children, isOpen, onToggle }: { title: string, children: React.ReactNode, isOpen: boolean, onToggle: () => void }) {
     return (
@@ -69,22 +102,36 @@ export default function ProductPage() {
     const params = useParams();
     const router = useRouter();
     const productId = params?.slug as string;
-    const { products } = useProductStore();
+    const { products, fetchProducts, isLoading } = useProductStore();
     const { addItem } = useCartStore();
     const [quantity, setQuantity] = useState(1);
     const [activeImage, setActiveImage] = useState(0);
     const [isAdded, setIsAdded] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     
     // Accordion states
     const [openSection, setOpenSection] = useState<string | null>("description");
 
+    useEffect(() => {
+        setIsMounted(true);
+        fetchProducts();
+    }, [fetchProducts]);
+
     const product = products.find(p => p.id === productId);
 
     useEffect(() => {
-        if (!product && products.length > 0) {
+        if (isMounted && !isLoading && !product && products.length > 0) {
             router.push('/shop/all');
         }
-    }, [product, products, router]);
+    }, [product, products, isLoading, isMounted, router]);
+
+    if (!isMounted || isLoading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+            </div>
+        );
+    }
 
     if (!product) return null;
 
@@ -132,10 +179,10 @@ export default function ProductPage() {
                                      <div className="absolute top-4 left-4 bg-yellow-500 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full">
                                         Draft
                                     </div>
-                                ) : product.sale_price ? (
-                                     <div className="absolute top-4 left-4 bg-red-600 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full">
-                                        Sale
-                                    </div>
+                                ) : isSaleActive(product) ? (
+                                    <div className="absolute top-4 left-4 bg-white border border-slate-900 text-slate-900 px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
+                                       {Math.round(((Number(product.price) - Number(product.sale_price)) / Number(product.price)) * 100)}% OFF
+                                   </div>
                                 ) : null}
                             </div>
                         </Reveal>
@@ -185,20 +232,23 @@ export default function ProductPage() {
                                     {product.name}
                                 </h1>
                                 <div className="flex items-center gap-3">
-                                    {product.sale_price ? (
+                                    {isSaleActive(product) ? (
                                         <>
-                                            <p className="text-2xl font-semibold text-brand-rose">GH₵{product.sale_price.toFixed(2)}</p>
-                                            <p className="text-lg text-slate-400 line-through">GH₵{product.price.toFixed(2)}</p>
+                                            <p className="text-2xl font-semibold text-slate-900">GH₵{Number(product.sale_price).toFixed(2)}</p>
+                                            <p className="text-lg text-slate-400 line-through">GH₵{Number(product.price).toFixed(2)}</p>
                                         </>
                                     ) : (
-                                        <p className="text-2xl font-semibold text-slate-900">GH₵{product.price.toFixed(2)}</p>
+                                        <p className="text-2xl font-semibold text-slate-900">GH₵{Number(product.price).toFixed(2)}</p>
                                     )}
                                 </div>
                             </div>
                         </Reveal>
 
+
                         <Reveal delay={0.3}>
-                            <CountdownTimer />
+                            {isSaleActive(product) && product.sale_end_date && (
+                                <SaleTimer endDate={product.sale_end_date} />
+                            )}
                             
                             <div className="space-y-6">
                                 {/* Color Selector (if present) */}

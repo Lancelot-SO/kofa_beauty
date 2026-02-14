@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/supabase/types";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
 import dynamic from "next/dynamic";
+import { getEffectivePrice } from "@/lib/utils/price";
 
 const PaymentStep = dynamic(() => import("@/components/checkout/PaymentStep"), { ssr: false });
 
@@ -368,9 +369,15 @@ export default function CheckoutPage() {
                                                 </span>
                                             </div>
                                             <div className="flex-1 flex flex-col justify-center">
-                                                <h4 className="text-[10px] uppercase tracking-widest font-bold mb-1">{product.name}</h4>
                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{product.category}</p>
-                                                <p className="text-xs mt-1 font-medium italic">GH₵{product.price.toFixed(2)}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className="text-xs font-medium italic">GH₵{getEffectivePrice(product).toFixed(2)}</p>
+                                                    {getEffectivePrice(product) < product.price && (
+                                                        <span className="text-[10px] line-through text-muted-foreground/60">
+                                                            GH₵{product.price.toFixed(2)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}

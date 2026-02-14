@@ -9,6 +9,7 @@ import { ShoppingCart, Eye, ArrowUpRight, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { isSaleActive } from "@/lib/utils/price";
 
 interface ProductCardProps {
     product: Product;
@@ -30,6 +31,16 @@ export function ProductCard({ product }: ProductCardProps) {
         setTimeout(() => setIsAdded(false), 2000);
     };
 
+    // Diagnostic log for development
+    if (product.sale_price) {
+        console.log(`Product "${product.name}" sale info:`, {
+            price: product.price,
+            sale_price: product.sale_price,
+            isSaleActive: isSaleActive(product),
+            sale_end_date: product.sale_end_date
+        });
+    }
+
     return (
         <motion.div
             className="group relative bg-[#EBE5D9] p-2.5 rounded-[32px] transition-transform hover:-translate-y-1 duration-300"
@@ -38,10 +49,10 @@ export function ProductCard({ product }: ProductCardProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
         >
-            {/* Top Right Arrow Trigger */}
+            {/* Top Left Arrow Trigger - Swapped position */}
             <Link 
                 href={`/shop/product/${product.id}`}
-                className="absolute top-5 right-5 z-20 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm text-slate-900 transition-transform group-hover:scale-110 hover:bg-slate-50"
+                className="absolute top-5 left-5 z-20 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm text-slate-900 transition-transform group-hover:scale-110 hover:bg-slate-50"
             >
                  <ArrowUpRight size={16} />
             </Link>
@@ -49,16 +60,16 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* Inner White Card */}
             <div className="bg-white rounded-[24px] p-4 flex flex-col h-full relative overflow-hidden">
                 
-                {/* Status Badges */}
-                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                {/* Status Badges - Top Right for Promo */}
+                <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
                     {product.stock === 0 ? (
                         <span className="bg-slate-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md">
                             Sold Out
                         </span>
-                    ) : product.sale_price ? (
-                        <span className="bg-red-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md">
-                            Sale
-                        </span>
+                    ) : isSaleActive(product) ? (
+                        <div className="bg-white border border-slate-900 text-slate-900 px-3 py-1 text-xs font-bold uppercase tracking-widest shadow-sm">
+                            {Math.round(((Number(product.price) - Number(product.sale_price)) / Number(product.price)) * 100)}% OFF
+                        </div>
                     ) : null}
                 </div>
 
@@ -105,22 +116,22 @@ export function ProductCard({ product }: ProductCardProps) {
                 <div className="text-center mt-auto">
                     <Link href={`/shop/product/${product.id}`}>
                         <h3 className="text-lg font-serif font-semibold text-[#8B7355] mb-1 group-hover:text-[#6d5a43] transition-colors line-clamp-1">
-                            {product.name}
+                            {product.name || "Unnamed Product"}
                         </h3>
                     </Link>
-                    <p className="text-slate-600 font-medium">
-                        {product.sale_price ? (
+                    <p className="flex items-center justify-center gap-4 font-medium">
+                        {isSaleActive(product) ? (
                             <>
-                                <span className="line-through text-slate-400 text-sm mr-2">
-                                     GH₵{product.price.toFixed(2)}
+                                <span className="line-through text-slate-400 text-sm">
+                                     GH₵{Number(product.price).toFixed(2)}
                                 </span>
-                                <span className="text-[#556B2F]">
-                                     GH₵{product.sale_price.toFixed(2)}
+                                <span className="text-slate-900 font-bold">
+                                     GH₵{Number(product.sale_price).toFixed(2)}
                                 </span>
                             </>
                         ) : (
-                            <span className="text-[#556B2F]">
-                                GH₵{product.price.toFixed(2)}
+                            <span className="text-slate-900">
+                                GH₵{Number(product.price).toFixed(2)}
                             </span>
                         )}
                     </p>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Product } from '@/lib/supabase/types';
+import { getEffectivePrice } from '@/lib/utils/price';
 
 export interface CartItem {
     product: Product;
@@ -16,7 +17,10 @@ interface CartState {
 }
 
 export const getCartSubtotal = (items: CartItem[]) => 
-    items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0);
+    items.reduce((sum, item) => {
+        const price = getEffectivePrice(item.product);
+        return sum + (Number(price) * item.quantity);
+    }, 0);
 
 export const useCartStore = create<CartState>()(
     persist(

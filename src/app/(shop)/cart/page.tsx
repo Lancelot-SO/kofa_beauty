@@ -9,6 +9,7 @@ import { useCartStore, getCartSubtotal } from "@/lib/store/useCartStore";
 import { useState, useEffect } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
+import { getEffectivePrice } from "@/lib/utils/price";
 
 export default function CartPage() {
     const { items, updateQuantity, removeItem } = useCartStore();
@@ -90,9 +91,18 @@ export default function CartPage() {
                                                     <Link href={`/shop/product/${product.id}`} className="hover:text-accent transition-colors">
                                                         <h3 className="text-xl font-light uppercase tracking-widest">{product.name}</h3>
                                                     </Link>
-                                                    <p className="text-sm text-muted-foreground font-light">Unit Price: GH₵{product.price.toFixed(2)}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm text-muted-foreground font-light">
+                                                            Unit Price: GH₵{getEffectivePrice(product).toFixed(2)}
+                                                        </p>
+                                                        {getEffectivePrice(product) < product.price && (
+                                                            <span className="text-xs line-through text-muted-foreground/60">
+                                                                GH₵{product.price.toFixed(2)}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <p className="text-xl font-light">GH₵{(product.price * quantity).toFixed(2)}</p>
+                                                <p className="text-xl font-light">GH₵{(getEffectivePrice(product) * quantity).toFixed(2)}</p>
                                             </div>
 
                                             <div className="flex justify-between items-center mt-8">
