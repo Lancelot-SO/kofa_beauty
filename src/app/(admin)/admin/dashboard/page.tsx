@@ -36,9 +36,10 @@ export default function DashboardPage() {
     const lowStockCount = products.filter(p => p.stock < 10 && p.stock > 0).length;
     const outOfStockCount = products.filter(p => p.stock === 0).length;
 
-    // Order Metrics
-    const totalRevenue = orders.reduce((sum: number, order: OrderWithItems) => sum + Number(order.total), 0);
-    const totalOrders = orders.length;
+    // Order Metrics (Exclude pending payment)
+    const paidOrders = orders.filter(order => order.status !== 'Pending Payment');
+    const totalRevenue = paidOrders.reduce((sum: number, order: OrderWithItems) => sum + Number(order.total), 0);
+    const totalOrders = paidOrders.length;
 
     // Sort orders by date (newest first)
     const recentOrders = [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);

@@ -19,15 +19,16 @@ export default function AnalyticsPage() {
 
     if (!isMounted) return null;
 
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    const totalOrders = orders.length;
+    const paidOrders = orders.filter(order => order.status !== 'Pending Payment');
+    const totalRevenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
+    const totalOrders = paidOrders.length;
     const aov = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const totalItemsSold = orders.reduce((sum, order) => sum + order.items.reduce((is, item) => is + item.quantity, 0), 0);
+    const totalItemsSold = paidOrders.reduce((sum, order) => sum + order.items.reduce((is, item) => is + item.quantity, 0), 0);
 
     // Calculate Sales by Product
     const productSales = new Map<string, { name: string; revenue: number; quantity: number }>();
 
-    orders.forEach(order => {
+    paidOrders.forEach(order => {
         order.items.forEach(item => {
             if (!productSales.has(item.product_name)) {
                 productSales.set(item.product_name, { name: item.product_name, revenue: 0, quantity: 0 });
@@ -46,7 +47,7 @@ export default function AnalyticsPage() {
 
     // Calculate Sales by Category (Need to join with products)
     const categorySales = new Map<string, number>();
-    orders.forEach(order => {
+    paidOrders.forEach(order => {
         order.items.forEach(item => {
             const product = products.find(p => p.id === item.product_id); // Try to find by ID
             // If product deleted or not found, maybe fallback or skip. 
