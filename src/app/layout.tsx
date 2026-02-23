@@ -41,7 +41,6 @@ export const metadata: Metadata = {
   description: "Confidence, not comparison",
 };
 
-import { ValentineModal } from "@/components/ui/ValentineModal";
 
 export default function RootLayout({
   children,
@@ -55,7 +54,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
-        <ValentineModal />
         <Toaster />
       </body>
     </html>
