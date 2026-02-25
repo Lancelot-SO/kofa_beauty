@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard, Music2 as Tiktok } from "lucide-react";
+import { ShoppingBag, User, Menu, X, Facebook, Instagram, Twitter, Youtube, LogOut, LayoutDashboard, Music2 as Tiktok, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCartStore, getCartSubtotal } from "@/lib/store/useCartStore";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { items } = useCartStore();
+    const { items: wishlistItems } = useWishlistStore();
     const subtotal = getCartSubtotal(items);
     const [isMounted, setIsMounted] = useState(false);
     const [user, setUser] = useState<any>(null);
@@ -162,6 +164,22 @@ export function Header() {
                                                 <User size={18} /> My Account
                                             </Link>
                                         )}
+                                        <div className="flex flex-col gap-4 mb-8">
+                                            <Link 
+                                                href="/wishlist" 
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className="flex items-center justify-between text-sm tracking-widest uppercase hover:text-brand-rose transition-colors"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Heart size={18} /> Wishlist
+                                                </div>
+                                                {wishlistItems.length > 0 && (
+                                                    <span className="bg-brand-rose text-white text-[10px] px-2 py-0.5 rounded-full">
+                                                        {wishlistItems.length}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </div>
                                         <div className="flex gap-6 opacity-50">
                                             <Link href="https://www.tiktok.com/tag/liyadances" target="_blank"><Tiktok size={20} /></Link>
                                             <Instagram size={20} />
@@ -252,6 +270,14 @@ export function Header() {
                                 <User size={20} strokeWidth={1.5} />
                             </Link>
                         )}
+                        <Link href="/wishlist" className="relative hover:text-brand-rose transition-colors group">
+                            <Heart size={20} strokeWidth={1.5} />
+                            {isMounted && wishlistItems.length > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-brand-rose text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                    {wishlistItems.length}
+                                </span>
+                            )}
+                        </Link>
                         <Link href="/cart" className="relative hover:text-brand-rose transition-colors group">
                             <ShoppingBag size={20} strokeWidth={1.5} />
                             {isMounted && cartCount > 0 && (

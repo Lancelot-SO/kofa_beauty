@@ -14,6 +14,7 @@ interface AddressAutocompleteProps {
     }) => void;
     defaultValue?: string;
     className?: string;
+    controlledQuery?: string;
 }
 
 interface Suggestion {
@@ -36,13 +37,21 @@ function getFlagPath(countryCode: string) {
     return `/flags/${countryCode.toLowerCase()}.png`;
 }
 
-export function AddressAutocomplete({ onSelect, defaultValue = "", className }: AddressAutocompleteProps) {
+export function AddressAutocomplete({ onSelect, defaultValue = "", className, controlledQuery }: AddressAutocompleteProps) {
     const [query, setQuery] = useState(defaultValue);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Update query when controlledQuery changes
+    useEffect(() => {
+        if (controlledQuery) {
+            setQuery(controlledQuery);
+            setIsOpen(true);
+        }
+    }, [controlledQuery]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

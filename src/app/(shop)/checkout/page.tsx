@@ -59,6 +59,7 @@ export default function CheckoutPage() {
     });
 
     const [showManualAddress, setShowManualAddress] = useState(false);
+    const [postcodeQuery, setPostcodeQuery] = useState("");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -265,26 +266,35 @@ export default function CheckoutPage() {
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4">
-                                                <Input 
-                                                    name="firstName"
-                                                    placeholder="First Name" 
-                                                    className="rounded-none h-14 border-border/60" 
-                                                    required 
-                                                    value={formData.firstName}
-                                                    onChange={handleInputChange}
-                                                />
-                                                <Input 
-                                                    name="lastName"
-                                                    placeholder="Last Name" 
-                                                    className="rounded-none h-14 border-border/60" 
-                                                    required 
-                                                    value={formData.lastName}
-                                                    onChange={handleInputChange}
-                                                />
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">First Name</label>
+                                                    <Input 
+                                                        name="firstName"
+                                                        placeholder="First Name" 
+                                                        className="rounded-none h-14 border-border/60" 
+                                                        required 
+                                                        value={formData.firstName}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Last Name</label>
+                                                    <Input 
+                                                        name="lastName"
+                                                        placeholder="Last Name" 
+                                                        className="rounded-none h-14 border-border/60" 
+                                                        required 
+                                                        value={formData.lastName}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                </div>
                                             </div>
+
                                             {formData.country === "United Kingdom" && !showManualAddress ? (
                                                 <div className="space-y-2">
+                                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Address</label>
                                                     <AddressAutocomplete 
+                                                        controlledQuery={postcodeQuery}
                                                         defaultValue={formData.address}
                                                         onSelect={(details) => {
                                                             setFormData(prev => ({
@@ -293,6 +303,7 @@ export default function CheckoutPage() {
                                                                 city: details.city,
                                                                 postcode: details.postcode
                                                             }));
+                                                            setPostcodeQuery(""); // Reset query after selection
                                                         }}
                                                     />
                                                     <button 
@@ -305,6 +316,7 @@ export default function CheckoutPage() {
                                                 </div>
                                             ) : (
                                                 <div className="space-y-2">
+                                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Address</label>
                                                     <Input 
                                                         name="address"
                                                         placeholder="Address" 
@@ -324,6 +336,37 @@ export default function CheckoutPage() {
                                                     )}
                                                 </div>
                                             )}
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">City</label>
+                                                    <Input 
+                                                        name="city"
+                                                        placeholder="City" 
+                                                        className="rounded-none h-14 border-border/60" 
+                                                        required 
+                                                        value={formData.city}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Postcode</label>
+                                                    <Input 
+                                                        name="postcode"
+                                                        placeholder="Postcode" 
+                                                        className="rounded-none h-14 border-border/60" 
+                                                        required 
+                                                        value={formData.postcode}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            if (formData.country === "United Kingdom" && e.target.value.length >= 3) {
+                                                                setPostcodeQuery(e.target.value);
+                                                                setShowManualAddress(false);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
                                             <Input 
                                                 name="apartment"
                                                 placeholder="Apartment, suite, etc. (optional)" 
@@ -331,24 +374,6 @@ export default function CheckoutPage() {
                                                 value={formData.apartment}
                                                 onChange={handleInputChange}
                                             />
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <Input 
-                                                    name="city"
-                                                    placeholder="City" 
-                                                    className="rounded-none h-14 border-border/60" 
-                                                    required 
-                                                    value={formData.city}
-                                                    onChange={handleInputChange}
-                                                />
-                                                <Input 
-                                                    name="postcode"
-                                                    placeholder="Postcode" 
-                                                    className="rounded-none h-14 border-border/60" 
-                                                    required 
-                                                    value={formData.postcode}
-                                                    onChange={handleInputChange}
-                                                />
-                                            </div>
                                             <Input 
                                                 name="phone"
                                                 placeholder="Phone Number" 

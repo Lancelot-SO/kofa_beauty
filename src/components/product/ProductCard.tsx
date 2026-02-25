@@ -5,8 +5,9 @@ import Image from "next/image";
 import { Product } from "@/lib/store/useProductStore";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useState } from "react";
-import { ShoppingCart, Eye, ArrowUpRight, Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { ShoppingCart, Eye, ArrowUpRight, Check, Heart } from "lucide-react";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { isSaleActive } from "@/lib/utils/price";
@@ -17,7 +18,9 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     const { addItem } = useCartStore();
+    const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
     const [isAdded, setIsAdded] = useState(false);
+    const isWishlisted = isInWishlist(product.id);
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -29,6 +32,19 @@ export function ProductCard({ product }: ProductCardProps) {
         setIsAdded(true);
         toast.success(`Added ${product.name} to cart`);
         setTimeout(() => setIsAdded(false), 2000);
+    };
+
+    const toggleWishlist = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (isWishlisted) {
+            removeFromWishlist(product.id);
+            toast.success(`Removed ${product.name} from wishlist`);
+        } else {
+            addToWishlist(product);
+            toast.success(`Added ${product.name} to wishlist`);
+        }
     };
 
 
@@ -93,6 +109,17 @@ export function ProductCard({ product }: ProductCardProps) {
                         ) : (
                             <ShoppingCart size={18} fill={isAdded ? "currentColor" : "none"} />
                         )}
+                    </button>
+                    
+                    <button
+                        onClick={toggleWishlist}
+                        className={cn(
+                            "w-8 h-8 flex items-center justify-center transition-colors",
+                            isWishlisted ? "text-brand-rose" : "text-slate-400 hover:text-brand-rose"
+                        )}
+                        title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                    >
+                        <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
                     </button>
                     
                     <Link
