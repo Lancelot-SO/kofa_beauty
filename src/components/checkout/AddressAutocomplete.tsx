@@ -75,9 +75,29 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
             setIsLoading(true);
             setHasError(false);
             try {
+                let biasParams = "";
+                const postcodeRegex = /^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9][A-Za-z]?))))\s?[0-9][A-Za-z]{2})$/;
+                const cleanedQuery = query.trim();
+                const isPostcode = postcodeRegex.test(cleanedQuery);
+
+                if (isPostcode) {
+                    try {
+                        const pcResponse = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(cleanedQuery)}`);
+                        if (pcResponse.ok) {
+                            const pcData = await pcResponse.json();
+                            if (pcData.result) {
+                                const { latitude, longitude } = pcData.result;
+                                biasParams = `&lat=${latitude}&lon=${longitude}`;
+                            }
+                        }
+                    } catch (pcErr) {
+                        console.error("Postcode lookup failed:", pcErr);
+                    }
+                }
+
                 // Photon API (OpenStreetMap based)
                 const response = await fetch(
-                    `https://photon.komoot.io/api/?q=${encodeURIComponent(query + " UK")}&limit=5`
+                    `https://photon.komoot.io/api/?q=${encodeURIComponent(query + " UK")}${biasParams}&limit=5`
                 );
                 
                 if (!response.ok) throw new Error("API failed");

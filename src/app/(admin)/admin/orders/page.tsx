@@ -7,31 +7,63 @@ import { Input } from "@/components/ui/input";
 import { Search, Filter, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Phone, MapPin, Package, Calendar, CreditCard } from "lucide-react";
+import { User, Mail, Phone, MapPin, Package, Calendar, CreditCard, Trash2 } from "lucide-react";
 import { useOrderStore, OrderStatus, OrderWithItems } from "@/lib/store/useOrderStore";
 import { useState, useEffect } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
+import { format, isWithinInterval, subDays, startOfDay, endOfDay } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function OrdersPage() {
-    const { orders, updateOrderStatus, fetchOrders, isLoading } = useOrderStore();
+    const { orders, updateOrderStatus, deleteOrder, fetchOrders, isLoading } = useOrderStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [isMounted, setIsMounted] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [dateRange, setDateRange] = useState<string>("all");
+    const [customStartDate, setCustomStartDate] = useState<string>("");
+    const [customEndDate, setCustomEndDate] = useState<string>("");
 
     useEffect(() => {
         setIsMounted(true);
         fetchOrders();
     }, [fetchOrders]);
 
-    const filteredOrders = orders.filter(order =>
-        order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredOrders = orders.filter(order => {
+        const matchesSearch = 
+            order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        if (!matchesSearch) return false;
+
+        const orderDate = new Date(order.created_at);
+        const today = startOfDay(new Date());
+
+        if (dateRange === 'today') {
+            return isWithinInterval(orderDate, { start: today, end: endOfDay(new Date()) });
+        }
+        if (dateRange === '7days') {
+            return isWithinInterval(orderDate, { start: subDays(today, 7), end: endOfDay(new Date()) });
+        }
+        if (dateRange === '30days') {
+            return isWithinInterval(orderDate, { start: subDays(today, 30), end: endOfDay(new Date()) });
+        }
+        if (dateRange === 'custom' && customStartDate && customEndDate) {
+            try {
+                return isWithinInterval(orderDate, { 
+                    start: startOfDay(new Date(customStartDate)), 
+                    end: endOfDay(new Date(customEndDate)) 
+                });
+            } catch {
+                return true; 
+            }
+        }
+
+        return true;
+    });
 
     const getStatusColor = (status: OrderStatus) => {
         switch (status) {
@@ -52,6 +84,22 @@ export default function OrdersPage() {
         }
     };
 
+    const handleDeleteOrder = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this order? This action is permanent and will remove all associated item data.")) {
+            return;
+        }
+
+        try {
+            await deleteOrder(id);
+            toast.success("Order deleted successfully");
+            if (selectedOrder?.id === id) {
+                setIsDetailsOpen(false);
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Failed to delete order");
+        }
+    };
+
     const openOrderDetails = (order: OrderWithItems) => {
         setSelectedOrder(order);
         setIsDetailsOpen(true);
@@ -68,7 +116,7 @@ export default function OrdersPage() {
                 </Button>
             </div>
 
-            <div className="flex items-center py-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 py-4">
                 <div className="relative max-w-sm w-full">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                     <Input
@@ -77,6 +125,39 @@ export default function OrdersPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
+                </div>
+                
+                <div className="flex items-center gap-2 flex-1">
+                    <Select value={dateRange} onValueChange={setDateRange}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filter by date" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Time</SelectItem>
+                            <SelectItem value="today">Today</SelectItem>
+                            <SelectItem value="7days">Last 7 Days</SelectItem>
+                            <SelectItem value="30days">Last 30 Days</SelectItem>
+                            <SelectItem value="custom">Custom Range</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {dateRange === 'custom' && (
+                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                            <Input 
+                                type="date" 
+                                className="w-40" 
+                                value={customStartDate}
+                                onChange={(e) => setCustomStartDate(e.target.value)}
+                            />
+                            <span className="text-slate-400">to</span>
+                            <Input 
+                                type="date" 
+                                className="w-40" 
+                                value={customEndDate}
+                                onChange={(e) => setCustomEndDate(e.target.value)}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -142,6 +223,13 @@ export default function OrdersPage() {
                                                             Mark as {status}
                                                         </DropdownMenuItem>
                                                     ))}
+                                                    <Separator className="my-1" />
+                                                    <DropdownMenuItem 
+                                                        className="text-red-600 focus:text-red-600 focus:bg-red-50 font-bold"
+                                                        onClick={() => handleDeleteOrder(order.id)}
+                                                    >
+                                                        <Trash2 size={14} className="mr-2" /> Delete Order
+                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -156,7 +244,7 @@ export default function OrdersPage() {
             <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
                 <SheetContent className="sm:max-w-xl w-full p-0 flex flex-col h-full bg-white">
                     {selectedOrder && (
-                        <>
+                        <div className="flex flex-col h-full overflow-hidden">
                             <SheetHeader className="p-6 border-b bg-slate-50/50">
                                 <div className="flex items-center justify-between mt-4">
                                     <div>
@@ -165,14 +253,25 @@ export default function OrdersPage() {
                                             Placed on {format(new Date(selectedOrder.created_at), "MMMM d, yyyy 'at' h:mm a")}
                                         </SheetDescription>
                                     </div>
-                                    <Badge variant="outline" className={`${getStatusColor(selectedOrder.status)} text-sm px-3 py-1`}>
-                                        {selectedOrder.status}
-                                    </Badge>
+                                    <div className="flex items-center gap-3">
+                                        <Badge variant="outline" className={`${getStatusColor(selectedOrder.status)} text-sm px-3 py-1`}>
+                                            {selectedOrder.status}
+                                        </Badge>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors h-8 w-8"
+                                            onClick={() => handleDeleteOrder(selectedOrder.id)}
+                                            title="Delete Order"
+                                        >
+                                            <Trash2 size={18} />
+                                        </Button>
+                                    </div>
                                 </div>
                             </SheetHeader>
                             
                             <ScrollArea className="flex-1">
-                                <div className="p-6 space-y-8">
+                                <div className="p-6 space-y-8 pb-12">
                                     {/* Customer Information */}
                                     <section className="space-y-4">
                                         <h3 className="text-xs uppercase tracking-widest font-bold text-slate-400 flex items-center gap-2">
@@ -265,7 +364,7 @@ export default function OrdersPage() {
                                     </section>
                                 </div>
                             </ScrollArea>
-                        </>
+                        </div>
                     )}
                 </SheetContent>
             </Sheet>
