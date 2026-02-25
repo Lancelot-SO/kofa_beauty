@@ -16,11 +16,20 @@ import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/supabase/types";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
 import dynamic from "next/dynamic";
+import NextImage from "next/image";
 import { getEffectivePrice } from "@/lib/utils/price";
 
 const PaymentStep = dynamic(() => import("@/components/checkout/PaymentStep"), { ssr: false });
-
 const PaystackButton = dynamic(() => import("@/components/checkout/PaystackButton"), { ssr: false });
+
+import { AddressAutocomplete } from "@/components/checkout/AddressAutocomplete";
+import { 
+    Select, 
+    SelectContent, 
+    SelectItem, 
+    SelectTrigger, 
+    SelectValue 
+} from "@/components/ui/select";
 
 export default function CheckoutPage() {
     const { items, clearCart } = useCartStore();
@@ -45,8 +54,11 @@ export default function CheckoutPage() {
         apartment: "",
         city: "",
         postcode: "",
+        country: "Ghana",
         phone: "",
     });
+
+    const [showManualAddress, setShowManualAddress] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -206,6 +218,52 @@ export default function CheckoutPage() {
 
                                         <div className="space-y-4 pt-4">
                                             <h2 className="text-xs uppercase tracking-[0.2em] font-bold">Shipping Address</h2>
+                                            
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Country / Region</label>
+                                                <Select 
+                                                    value={formData.country} 
+                                                    onValueChange={(value) => {
+                                                        setFormData(prev => ({ ...prev, country: value }));
+                                                        setShowManualAddress(false);
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="rounded-none h-14 border-border/60 focus:ring-0">
+                                                        <SelectValue placeholder="Select Country" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-none">
+                                                        <SelectItem value="Ghana">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="relative w-4 h-3 shrink-0 overflow-hidden border border-border/10">
+                                                                    <NextImage 
+                                                                        src="/flags/gh.png" 
+                                                                        alt="Ghana" 
+                                                                        fill 
+                                                                        className="object-cover" 
+                                                                        unoptimized
+                                                                    />
+                                                                </div>
+                                                                Ghana
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="United Kingdom">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="relative w-4 h-3 shrink-0 overflow-hidden border border-border/10">
+                                                                    <NextImage 
+                                                                        src="/flags/gb.png" 
+                                                                        alt="United Kingdom" 
+                                                                        fill 
+                                                                        className="object-cover" 
+                                                                        unoptimized
+                                                                    />
+                                                                </div>
+                                                                United Kingdom
+                                                            </div>
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
                                             <div className="grid grid-cols-2 gap-4">
                                                 <Input 
                                                     name="firstName"
@@ -224,14 +282,48 @@ export default function CheckoutPage() {
                                                     onChange={handleInputChange}
                                                 />
                                             </div>
-                                            <Input 
-                                                name="address"
-                                                placeholder="Address" 
-                                                className="rounded-none h-14 border-border/60" 
-                                                required 
-                                                value={formData.address}
-                                                onChange={handleInputChange}
-                                            />
+                                            {formData.country === "United Kingdom" && !showManualAddress ? (
+                                                <div className="space-y-2">
+                                                    <AddressAutocomplete 
+                                                        defaultValue={formData.address}
+                                                        onSelect={(details) => {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                address: details.address,
+                                                                city: details.city,
+                                                                postcode: details.postcode
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setShowManualAddress(true)}
+                                                        className="text-[10px] text-muted-foreground uppercase tracking-widest hover:text-black transition-colors ml-1"
+                                                    >
+                                                        Or enter address manually
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <Input 
+                                                        name="address"
+                                                        placeholder="Address" 
+                                                        className="rounded-none h-14 border-border/60" 
+                                                        required 
+                                                        value={formData.address}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                    {formData.country === "United Kingdom" && (
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => setShowManualAddress(false)}
+                                                            className="text-[10px] text-muted-foreground uppercase tracking-widest hover:text-black transition-colors ml-1"
+                                                        >
+                                                            Use address search
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
                                             <Input 
                                                 name="apartment"
                                                 placeholder="Apartment, suite, etc. (optional)" 
@@ -289,7 +381,7 @@ export default function CheckoutPage() {
                                             <div className="flex justify-between text-xs">
                                                 <span className="text-muted-foreground uppercase tracking-widest">Ship to</span>
                                                 <span className="font-medium text-black">
-                                                    {formData.address}, {formData.city}, {formData.postcode}
+                                                    {formData.address}, {formData.city}, {formData.postcode}, {formData.country}
                                                 </span>
                                             </div>
                                         </div>

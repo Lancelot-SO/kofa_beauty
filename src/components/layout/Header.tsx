@@ -90,7 +90,7 @@ export function Header() {
                     </div>
                     <div className="flex-1 text-center">
                         <span className="uppercase font-medium">
-                            Free Shipping on all orders
+                            Confidence, Not Comparison
                         </span>
                     </div>
                     <div className="hidden md:flex gap-4 items-center opacity-70">
@@ -197,7 +197,7 @@ export function Header() {
                                 className="hover:text-brand-rose transition-colors relative group py-2"
                             >
                                 {item}
-                                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-brand-rose transition-all duration-300 group-hover:w-full" />
+                                <span className="absolute bottom-0 left-0 w-0 h-px bg-brand-rose transition-all duration-300 group-hover:w-full" />
                             </Link>
                         ))}
                     </nav>
@@ -206,7 +206,7 @@ export function Header() {
                     <div className="flex items-center gap-5 md:gap-8 text-white">
                         <div className="hidden md:block">
                             <div className="flex items-center gap-5">
-                                <div className="w-[1px] h-4 bg-white/20"></div>
+                                <div className="w-px h-4 bg-white/20"></div>
                             </div>
                         </div>
 
