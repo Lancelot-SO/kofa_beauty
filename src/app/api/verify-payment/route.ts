@@ -44,6 +44,7 @@ export async function POST(request: Request) {
                             items: orderDetails.items,
                             total: orderDetails.total,
                             shippingAddress: orderDetails.shippingAddress,
+                            currency: orderDetails.currency,
                         }),
                     });
                 } catch (emailError) {

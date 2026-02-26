@@ -82,13 +82,13 @@ export function Header() {
     const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
     return (
-        <header className={`w-full fixed top-0 z-50 transition-all duration-500 ${scrolled ? "bg-black/90 backdrop-blur-md" : "bg-transparent"}`}>
+        <header className={`w-full fixed top-0 z-50 transition-all duration-500 ${scrolled ? "bg-black/90 backdrop-blur-md" : "bg-transparent"}`} suppressHydrationWarning>
 
             
             {/* Top Banner - Subtle transparency */}
             {!scrolled && (
-                <div className="bg-black/80 text-white text-[10px] md:text-xs py-2 px-4 md:px-8 flex justify-between items-center tracking-[0.2em] border-b border-white/5">
-                    <div className="flex items-center">
+                <div className="bg-black/80 text-white text-[10px] md:text-xs py-2 px-4 md:px-8 flex justify-between items-center tracking-[0.2em] border-b border-white/5" suppressHydrationWarning>
+                    <div className="flex items-center" suppressHydrationWarning>
                     </div>
                     <div className="flex-1 text-center">
                         <span className="uppercase font-medium">

@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Package, ChevronRight, Clock } from "lucide-react";
+import { LocalizedPrice } from "@/components/ui/LocalizedPrice";
 
 export default async function OrdersPage() {
     const supabase = await createClient();
@@ -44,7 +45,9 @@ export default async function OrdersPage() {
 
                                 <div className="flex flex-col items-end gap-1">
                                     <p className="text-sm text-gray-400 uppercase tracking-widest text-[10px]">Total Amount</p>
-                                    <p className="text-lg font-bold font-playfair">GH₵{order.total_amount.toFixed(2)}</p>
+                                    <p className="text-lg font-bold font-playfair">
+                                        <LocalizedPrice amount={order.total_amount} showBase />
+                                    </p>
                                 </div>
                                 
                                 <div className="hidden md:block w-px h-10 bg-gray-100" />
@@ -60,7 +63,7 @@ export default async function OrdersPage() {
                             {/* Preview Items */}
                             <div className="mt-6 pt-6 border-t border-gray-50 flex gap-3 overflow-x-auto pb-2">
                                 {order.order_items.map((item: any) => (
-                                    <div key={item.id} className="w-16 h-16 bg-gray-50 rounded-lg flex-shrink-0 relative border border-gray-100">
+                                    <div key={item.id} className="w-16 h-16 bg-gray-50 rounded-lg shrink-0 relative border border-gray-100">
                                          {/* Image placeholder */}
                                          {item.products?.image && (
                                              <img src={item.products.image} alt={item.products.name} className="w-full h-full object-cover rounded-lg opacity-80" />

@@ -7,9 +7,9 @@ export default function ShopLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen" suppressHydrationWarning>
             <Header />
-            <main className="flex-grow primary-copy">
+            <main className="grow primary-copy">
                 {children}
             </main>
             <Footer />

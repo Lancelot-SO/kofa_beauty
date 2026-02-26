@@ -17,7 +17,8 @@ import { Profile } from "@/lib/supabase/types";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
-import { getEffectivePrice } from "@/lib/utils/price";
+import { getEffectivePrice, formatPrice, convertPrice } from "@/lib/utils/price";
+import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 const PaymentStep = dynamic(() => import("@/components/checkout/PaymentStep"), { ssr: false });
 const PaystackButton = dynamic(() => import("@/components/checkout/PaystackButton"), { ssr: false });
@@ -41,6 +42,7 @@ export default function CheckoutPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [countdown, setCountdown] = useState(10);
     const router = useRouter();
+    const { currency, rates } = useCurrency();
 
     const tax = subtotal * TAX_RATE;
     const total = subtotal + SHIPPING_FEE + tax;
@@ -261,6 +263,20 @@ export default function CheckoutPage() {
                                                                 United Kingdom
                                                             </div>
                                                         </SelectItem>
+                                                        <SelectItem value="Nigeria">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="relative w-4 h-3 shrink-0 overflow-hidden border border-border/10">
+                                                                    <NextImage 
+                                                                        src="/flags/ng.png" 
+                                                                        alt="Nigeria" 
+                                                                        fill 
+                                                                        className="object-cover" 
+                                                                        unoptimized
+                                                                    />
+                                                                </div>
+                                                                Nigeria
+                                                            </div>
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -290,12 +306,13 @@ export default function CheckoutPage() {
                                                 </div>
                                             </div>
 
-                                            {formData.country === "United Kingdom" && !showManualAddress ? (
+                                            {["United Kingdom", "Nigeria"].includes(formData.country) && !showManualAddress ? (
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Address</label>
                                                     <AddressAutocomplete 
                                                         controlledQuery={postcodeQuery}
                                                         defaultValue={formData.address}
+                                                        countryCode={formData.country === "Nigeria" ? "NG" : "GB"}
                                                         onSelect={(details) => {
                                                             setFormData(prev => ({
                                                                 ...prev,
@@ -325,7 +342,7 @@ export default function CheckoutPage() {
                                                         value={formData.address}
                                                         onChange={handleInputChange}
                                                     />
-                                                    {formData.country === "United Kingdom" && (
+                                                    {["United Kingdom", "Nigeria"].includes(formData.country) && (
                                                         <button 
                                                             type="button"
                                                             onClick={() => setShowManualAddress(false)}
@@ -359,7 +376,7 @@ export default function CheckoutPage() {
                                                         value={formData.postcode}
                                                         onChange={(e) => {
                                                             handleInputChange(e);
-                                                            if (formData.country === "United Kingdom" && e.target.value.length >= 3) {
+                                                            if (["United Kingdom", "Nigeria"].includes(formData.country) && e.target.value.length >= 3) {
                                                                 setPostcodeQuery(e.target.value);
                                                                 setShowManualAddress(false);
                                                             }
@@ -418,7 +435,9 @@ export default function CheckoutPage() {
                                                     <div className="w-4 h-4 rounded-full border-4 border-black" />
                                                     <div className="text-[10px] uppercase tracking-widest font-bold">Delivery Arrangement</div>
                                                 </div>
-                                                <span className="text-xs font-bold uppercase tracking-widest text-[#B88E2F]">GH₵{SHIPPING_FEE.toFixed(2)}</span>
+                                                <span className="text-xs font-bold uppercase tracking-widest text-[#B88E2F]">
+                                                    {formatPrice(SHIPPING_FEE, currency, rates)}
+                                                </span>
                                             </div>
                                         </div>
 
@@ -488,10 +507,10 @@ export default function CheckoutPage() {
                                             <div className="flex-1 flex flex-col justify-center">
                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{product.category}</p>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <p className="text-xs font-medium italic">GH₵{getEffectivePrice(product).toFixed(2)}</p>
+                                                    <p className="text-xs font-medium italic">{formatPrice(getEffectivePrice(product), currency, rates)}</p>
                                                     {getEffectivePrice(product) < product.price && (
                                                         <span className="text-[10px] line-through text-muted-foreground/60">
-                                                            GH₵{product.price.toFixed(2)}
+                                                            {formatPrice(product.price, currency, rates)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -505,7 +524,7 @@ export default function CheckoutPage() {
                                 <div className="space-y-4 mb-8">
                                     <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
                                         <span>Subtotal</span>
-                                        <span className="text-black font-medium">GH₵{subtotal.toFixed(2)}</span>
+                                        <span className="text-black font-medium">{formatPrice(subtotal, currency, rates)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
                                         <span>Delivery Fee (Pay to Rider)</span>
@@ -513,7 +532,7 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
                                         <span>Tax</span>
-                                        <span className="text-black font-medium">GH₵{tax.toFixed(2)}</span>
+                                        <span className="text-black font-medium">{formatPrice(tax, currency, rates)}</span>
                                     </div>
                                 </div>
 
@@ -522,10 +541,19 @@ export default function CheckoutPage() {
                                 <div className="flex justify-between items-end">
                                     <span className="text-xs uppercase tracking-[0.2em] font-bold">Total</span>
                                     <div className="text-right">
-                                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">GHS</span>
-                                        <span className="text-3xl font-light">GH₵{total.toFixed(2)}</span>
+                                        {currency !== 'GHS' && (
+                                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">
+                                                Approx. {formatPrice(total, 'GHS')}
+                                            </span>
+                                        )}
+                                        <span className="text-3xl font-light">{formatPrice(total, currency, rates)}</span>
                                     </div>
                                 </div>
+                                {currency !== 'GHS' && (
+                                    <p className="mt-4 text-[9px] text-muted-foreground uppercase tracking-widest text-center leading-relaxed">
+                                        * You will be charged the GHS equivalent of {formatPrice(total, 'GHS')} at checkout
+                                    </p>
+                                )}
                             </div>
                         </Reveal>
                     </div>

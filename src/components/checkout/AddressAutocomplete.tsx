@@ -18,6 +18,7 @@ interface AddressAutocompleteProps {
     defaultValue?: string;
     className?: string;
     controlledQuery?: string;
+    countryCode?: string; // e.g. 'GB', 'NG'
 }
 
 interface Suggestion {
@@ -28,7 +29,7 @@ interface Suggestion {
     source: 'google-places' | 'google-geocoding' | 'postcodes-io';
 }
 
-export function AddressAutocomplete({ onSelect, defaultValue = "", className, controlledQuery }: AddressAutocompleteProps) {
+export function AddressAutocomplete({ onSelect, defaultValue = "", className, controlledQuery, countryCode = "GB" }: AddressAutocompleteProps) {
     const [query, setQuery] = useState(defaultValue);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -86,7 +87,8 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                 setDebugInfo(`Google Maps Load Error: ${loadError.message}`);
             }
 
-            const isPostcode = ukPostcodeRegex.test(trimmedQuery);
+            const isUK = countryCode.toUpperCase() === 'GB';
+            const isPostcode = isUK && ukPostcodeRegex.test(trimmedQuery);
 
             if (isPostcode) {
                 // Priority 1: postcodes.io for instant UK validation
@@ -146,7 +148,7 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                 autocompleteService.current.getPlacePredictions(
                     {
                         input: query,
-                        componentRestrictions: { country: "gb" },
+                        componentRestrictions: { country: countryCode.toLowerCase() },
                         types: ["address"]
                     },
                     (predictions, status) => {
@@ -160,7 +162,7 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                             })));
                         } else {
                             if (status !== 'ZERO_RESULTS') {
-                                setDebugInfo(`Places API Status: ${status}`);
+                                setDebugInfo(`Places API Status (${countryCode}): ${status}`);
                             }
                             if (!isPostcode && status === 'ZERO_RESULTS') setHasError(true);
                         }
@@ -179,7 +181,7 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [query, isOpen, isLoaded, loadError]);
+    }, [query, isOpen, isLoaded, loadError, countryCode]);
 
     const handleSelect = async (suggestion: Suggestion) => {
         if (suggestion.source === 'google-places' || suggestion.source === 'google-geocoding') {

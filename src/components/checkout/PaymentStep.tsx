@@ -7,7 +7,8 @@ import { usePaystackPayment } from "react-paystack";
 import { toast } from "sonner";
 import { useOrderStore } from "@/lib/store/useOrderStore";
 import { useCartStore } from "@/lib/store/useCartStore";
-import { getEffectivePrice } from "@/lib/utils/price";
+import { getEffectivePrice, formatPrice } from "@/lib/utils/price";
+import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 interface PaymentStepProps {
     formData: any;
@@ -29,6 +30,7 @@ export default function PaymentStep({
     const [isProcessing, setIsProcessing] = useState(false);
     const { addOrder } = useOrderStore();
     const { clearCart } = useCartStore();
+    const { currency, rates } = useCurrency();
 
     const [orderNumber] = useState(() => {
         const timestamp = Date.now().toString().slice(-6);
@@ -116,6 +118,7 @@ export default function PaymentStep({
                                     })),
                                     total: total,
                                     shippingAddress: `${formData.address}, ${formData.apartment ? formData.apartment + ', ' : ''}${formData.city}, ${formData.postcode}`,
+                                    currency: currency,
                                 }
                             }),
                         });
@@ -156,7 +159,7 @@ export default function PaymentStep({
                     onClick={handlePayment}
                     className="w-full h-14 bg-black text-white hover:bg-neutral-800 transition-colors uppercase text-[10px] tracking-[0.3em] font-bold flex items-center justify-center gap-3"
                 >
-                    Confirm Order
+                    Confirm Order ({formatPrice(total, currency, rates)})
                 </Button>
             )}
         </div>

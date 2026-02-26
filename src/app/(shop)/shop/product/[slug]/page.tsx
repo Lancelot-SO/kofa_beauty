@@ -21,7 +21,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { isSaleActive } from "@/lib/utils/price";
+import { isSaleActive, formatPrice } from "@/lib/utils/price";
+import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 // --- Components ---
 
@@ -108,6 +109,7 @@ export default function ProductPage() {
     const [activeImage, setActiveImage] = useState(0);
     const [isAdded, setIsAdded] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const { currency, rates } = useCurrency();
     
     // Accordion states
     const [openSection, setOpenSection] = useState<string | null>("description");
@@ -234,11 +236,11 @@ export default function ProductPage() {
                                 <div className="flex items-center gap-3">
                                     {isSaleActive(product) ? (
                                         <>
-                                            <p className="text-2xl font-semibold text-slate-900">GH₵{Number(product.sale_price).toFixed(2)}</p>
-                                            <p className="text-lg text-slate-400 line-through">GH₵{Number(product.price).toFixed(2)}</p>
+                                            <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.sale_price), currency, rates)}</p>
+                                            <p className="text-lg text-slate-400 line-through">{formatPrice(Number(product.price), currency, rates)}</p>
                                         </>
                                     ) : (
-                                        <p className="text-2xl font-semibold text-slate-900">GH₵{Number(product.price).toFixed(2)}</p>
+                                        <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.price), currency, rates)}</p>
                                     )}
                                 </div>
                             </div>

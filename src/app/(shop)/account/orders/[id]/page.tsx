@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ArrowLeft, Package, MapPin, Calendar, CreditCard } from "lucide-react";
 import { notFound } from "next/navigation";
+import { LocalizedPrice } from "@/components/ui/LocalizedPrice";
 
 interface PageProps {
     params: {
@@ -77,7 +78,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
                                                 <h4 className="font-bold font-playfair">{item.products?.name}</h4>
                                                 <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                             </div>
-                                            <p className="font-bold">GH₵{(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-bold">
+                                                <LocalizedPrice amount={item.price * item.quantity} />
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -86,15 +89,15 @@ export default async function OrderDetailPage({ params }: PageProps) {
                          <div className="border-t border-gray-100 mt-6 pt-6 space-y-3">
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Subtotal</span>
-                                <span>GH₵{(order.total_amount - (order.shipping_cost || 0)).toFixed(2)}</span>
+                                <span><LocalizedPrice amount={order.total_amount - (order.shipping_cost || 0)} /></span>
                             </div>
                              <div className="flex justify-between text-sm text-gray-600">
                                 <span>Shipping</span>
-                                <span>GH₵{(order.shipping_cost || 0).toFixed(2)}</span>
+                                <span><LocalizedPrice amount={order.shipping_cost || 0} /></span>
                             </div>
                              <div className="flex justify-between text-lg font-bold font-playfair mt-4 pt-4 border-t border-gray-100">
                                 <span>Total</span>
-                                <span>GH₵{order.total_amount.toFixed(2)}</span>
+                                <span><LocalizedPrice amount={order.total_amount} showBase /></span>
                             </div>
                         </div>
                     </div>

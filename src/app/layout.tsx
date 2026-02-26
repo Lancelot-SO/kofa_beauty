@@ -3,6 +3,7 @@ import { Montserrat, Bodoni_Moda, Playfair_Display, Lato } from "next/font/googl
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { CurrencyProvider } from "@/lib/contexts/CurrencyContext";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -53,8 +54,10 @@ export default function RootLayout({
         className={`${montserrat.variable} ${bodoni.variable} ${megante.variable} ${playfair.variable} ${lato.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        {children}
-        <Toaster />
+        <CurrencyProvider>
+          {children}
+          <Toaster />
+        </CurrencyProvider>
       </body>
     </html>
   );

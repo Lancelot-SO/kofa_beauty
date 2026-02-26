@@ -9,11 +9,13 @@ import { useCartStore, getCartSubtotal } from "@/lib/store/useCartStore";
 import { useState, useEffect } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
-import { getEffectivePrice } from "@/lib/utils/price";
+import { getEffectivePrice, formatPrice } from "@/lib/utils/price";
+import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 export default function CartPage() {
     const { items, updateQuantity, removeItem } = useCartStore();
     const [isMounted, setIsMounted] = useState(false);
+    const { currency, rates } = useCurrency();
 
     const subtotal = getCartSubtotal(items);
     const tax = subtotal * TAX_RATE;
@@ -61,7 +63,7 @@ export default function CartPage() {
                             <ChevronLeft size={12} />
                             Back to Shop
                         </Link>
-                        <h1 className="text-4xl md:text-5xl font-light uppercase tracking-[0.1em]">Your Bag</h1>
+                        <h1 className="text-4xl md:text-5xl font-light uppercase tracking-widest">Your Bag</h1>
                     </div>
                     <p className="text-sm font-light text-muted-foreground italic">
                         {items.reduce((acc, item) => acc + item.quantity, 0)} Items in your bag
@@ -75,7 +77,7 @@ export default function CartPage() {
                             {items.map(({ product, quantity }, index) => (
                                 <Reveal key={product.id} delay={index * 0.05} y={20}>
                                     <div className="flex flex-col sm:flex-row gap-8 pb-10 border-b border-border/40 last:border-0 last:pb-0">
-                                        <Link href={`/shop/product/${product.id}`} className="relative w-full sm:w-40 aspect-[4/5] bg-secondary/20 overflow-hidden flex-shrink-0 group">
+                                        <Link href={`/shop/product/${product.id}`} className="relative w-full sm:w-40 aspect-4/5 bg-secondary/20 overflow-hidden shrink-0 group">
                                             <Image
                                                 src={product.image || "/kofa-logo.png"}
                                                 alt={product.name}
@@ -93,16 +95,16 @@ export default function CartPage() {
                                                     </Link>
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-sm text-muted-foreground font-light">
-                                                            Unit Price: GH₵{getEffectivePrice(product).toFixed(2)}
+                                                            Unit Price: {formatPrice(getEffectivePrice(product), currency, rates)}
                                                         </p>
                                                         {getEffectivePrice(product) < product.price && (
                                                             <span className="text-xs line-through text-muted-foreground/60">
-                                                                GH₵{product.price.toFixed(2)}
+                                                                {formatPrice(product.price, currency, rates)}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <p className="text-xl font-light">GH₵{(getEffectivePrice(product) * quantity).toFixed(2)}</p>
+                                                <p className="text-xl font-light">{formatPrice(getEffectivePrice(product) * quantity, currency, rates)}</p>
                                             </div>
 
                                             <div className="flex justify-between items-center mt-8">
@@ -146,7 +148,7 @@ export default function CartPage() {
                                 <div className="space-y-4">
                                     <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">
                                         <span>Subtotal</span>
-                                        <span className="text-black font-medium">GH₵{subtotal.toFixed(2)}</span>
+                                        <span className="text-black font-medium">{formatPrice(subtotal, currency, rates)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
                                         <span>Delivery Fee (Pay to Rider)</span>
@@ -154,7 +156,7 @@ export default function CartPage() {
                                     </div>
                                     <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">
                                         <span>Estimated Tax</span>
-                                        <span className="text-black font-medium">GH₵{tax.toFixed(2)}</span>
+                                        <span className="text-black font-medium">{formatPrice(tax, currency, rates)}</span>
                                     </div>
                                 </div>
 
@@ -162,7 +164,7 @@ export default function CartPage() {
 
                                 <div className="flex justify-between items-end">
                                     <span className="text-xs uppercase tracking-[0.2em] font-bold">Estimated Total</span>
-                                    <span className="text-3xl font-light">GH₵{total.toFixed(2)}</span>
+                                    <span className="text-3xl font-light">{formatPrice(total, currency, rates)}</span>
                                 </div>
 
                                 <Link href="/checkout" className="block w-full">

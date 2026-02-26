@@ -4,7 +4,7 @@ import { Facebook, Instagram, Twitter, Youtube, ArrowRight, Music2 as Tiktok } f
 
 export function Footer() {
     return (
-        <footer className="relative bg-black text-white pt-24 pb-12 border-t border-white/5 z-40">
+        <footer suppressHydrationWarning className="relative bg-black text-white pt-24 pb-12 border-t border-white/5 z-40">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-20">
 
@@ -98,7 +98,7 @@ export function Footer() {
                         <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
                     </div>
                     <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em]">
-                        Designed by <span className="text-gray-400">DeZiyaDeZigns</span>
+                        Designed by <span className="text-gray-400">Artfrica Studios</span>
                     </p>
                 </div>
             </div>

@@ -15,6 +15,9 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
+import { formatPrice } from "@/lib/utils/price";
+import { CurrencyCode } from "@/lib/constants/currency";
+
 interface OrderEmailProps {
     customerName: string;
     orderNumber: string;
@@ -25,6 +28,7 @@ interface OrderEmailProps {
     }[];
     total: number;
     shippingAddress: string;
+    currency?: CurrencyCode;
 }
 
 export const OrderEmail = ({
@@ -33,6 +37,7 @@ export const OrderEmail = ({
     items,
     total,
     shippingAddress,
+    currency = 'GHS',
 }: OrderEmailProps) => (
     <Html>
         <Head />
@@ -57,7 +62,7 @@ export const OrderEmail = ({
                                 <Text style={itemName}>{item.name} x {item.quantity}</Text>
                             </Column>
                             <Column style={{ textAlign: "right" }}>
-                                <Text style={itemPrice}>GH₵{item.price.toFixed(2)}</Text>
+                                <Text style={itemPrice}>{formatPrice(item.price, currency)}</Text>
                             </Column>
                         </Row>
                     ))}
@@ -67,7 +72,7 @@ export const OrderEmail = ({
                             <Text style={totalLabel}>Total</Text>
                         </Column>
                         <Column style={{ textAlign: "right" }}>
-                            <Text style={totalValue}>GH₵{total.toFixed(2)}</Text>
+                            <Text style={totalValue}>{formatPrice(total, currency)}</Text>
                         </Column>
                     </Row>
                 </Section>

@@ -4,13 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/lib/store/useProductStore";
 import { useCartStore } from "@/lib/store/useCartStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCart, Eye, ArrowUpRight, Check, Heart } from "lucide-react";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { isSaleActive } from "@/lib/utils/price";
+import { isSaleActive, formatPrice } from "@/lib/utils/price";
+import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 interface ProductCardProps {
     product: Product;
@@ -21,6 +22,12 @@ export function ProductCard({ product }: ProductCardProps) {
     const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
     const [isAdded, setIsAdded] = useState(false);
     const isWishlisted = isInWishlist(product.id);
+    const { currency, rates } = useCurrency();
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -47,7 +54,11 @@ export function ProductCard({ product }: ProductCardProps) {
         }
     };
 
-
+    const renderPrice = (amount: number) => {
+        // Fallback to GHS for SSR to match the server-side render
+        if (!isMounted) return formatPrice(amount, 'GHS');
+        return formatPrice(amount, currency, rates);
+    };
 
     return (
         <motion.div
@@ -142,15 +153,15 @@ export function ProductCard({ product }: ProductCardProps) {
                         {isSaleActive(product) ? (
                             <>
                                 <span className="line-through text-slate-400 text-sm">
-                                     GH₵{Number(product.price).toFixed(2)}
+                                     {renderPrice(Number(product.price))}
                                 </span>
                                 <span className="text-slate-900 font-bold">
-                                     GH₵{Number(product.sale_price).toFixed(2)}
+                                     {renderPrice(Number(product.sale_price))}
                                 </span>
                             </>
                         ) : (
                             <span className="text-slate-900">
-                                GH₵{Number(product.price).toFixed(2)}
+                                {renderPrice(Number(product.price))}
                             </span>
                         )}
                     </p>
