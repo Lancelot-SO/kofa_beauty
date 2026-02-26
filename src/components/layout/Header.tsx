@@ -181,10 +181,9 @@ export function Header() {
                                             </Link>
                                         </div>
                                         <div className="flex gap-6 opacity-50">
-                                            <Link href="https://www.tiktok.com/tag/liyadances" target="_blank"><Tiktok size={20} /></Link>
-                                            <Instagram size={20} />
-                                            <Facebook size={20} />
-                                            <Twitter size={20} />
+                                                                   <Link href="https://www.tiktok.com/@kofabeauty?_r=1&_t=ZN-93Z5Xv8kU3q" target="_blank" className="hover:text-brand-rose transition-colors"><Tiktok size={14} /></Link>
+                        <Link href="https://www.instagram.com/kofabeautyy?igsh=MWFlbjhzNjJ1c2ZmYQ%3D%3D&utm_source=qr" target="_blank" className="hover:text-brand-rose transition-colors"><Instagram size={12} /></Link>
+                        <Link href="https://www.facebook.com/kofabeauty" target="_blank" className="hover:text-brand-rose transition-colors"><Facebook size={12} /></Link>
                                         </div>
                                     </div>
                                 </div>
