@@ -36,10 +36,12 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
     const [hasError, setHasError] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const { isLoaded } = useJsApiLoader({
+    const { isLoaded, loadError } = useJsApiLoader({
         googleMapsApiKey: GOOGLE_MAPS_API_KEY || "",
         libraries,
     });
+
+    const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
     const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
     const geocoder = useRef<google.maps.Geocoder | null>(null);
@@ -72,11 +74,17 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
             if (trimmedQuery.length < 3 || !isOpen) {
                 setSuggestions([]);
                 setHasError(false);
+                setDebugInfo(null);
                 return;
             }
 
             setIsLoading(true);
             setHasError(false);
+            setDebugInfo(null);
+
+            if (loadError) {
+                setDebugInfo(`Google Maps Load Error: ${loadError.message}`);
+            }
 
             const isPostcode = ukPostcodeRegex.test(trimmedQuery);
 
@@ -88,7 +96,6 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                         const data = await response.json();
                         if (data.result) {
                             const { postcode, admin_district, region } = data.result;
-                            // Add postcodes.io result
                             const items: Suggestion[] = [{
                                 id: `pcio-${postcode}`,
                                 description: `${postcode}, ${admin_district}, ${region || 'UK'}`,
@@ -97,7 +104,6 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                                 source: 'postcodes-io'
                             }];
 
-                            // Also try Google Geocoding for the postcode to get exact LatLng/formatting
                             if (isLoaded && window.google) {
                                 if (!geocoder.current) geocoder.current = new window.google.maps.Geocoder();
                                 geocoder.current.geocode(
@@ -112,6 +118,8 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                                                 secondaryText: gResult.formatted_address.replace(trimmedQuery, '').trim().replace(/^,/, '').trim(),
                                                 source: 'google-geocoding'
                                             });
+                                        } else if (status === 'REQUEST_DENIED' || status === 'OVER_QUERY_LIMIT') {
+                                            setDebugInfo(`Geocoding failed: ${status}. Check API activation.`);
                                         }
                                         setSuggestions(items);
                                         setIsLoading(false);
@@ -151,19 +159,27 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                                 source: 'google-places'
                             })));
                         } else {
-                            if (!isPostcode) setHasError(true);
+                            if (status !== 'ZERO_RESULTS') {
+                                setDebugInfo(`Places API Status: ${status}`);
+                            }
+                            if (!isPostcode && status === 'ZERO_RESULTS') setHasError(true);
                         }
                         setIsLoading(false);
                     }
                 );
             } else {
                 setIsLoading(false);
+                if (!isLoaded && GOOGLE_MAPS_API_KEY) {
+                    setDebugInfo("Google Maps is still loading...");
+                } else if (!GOOGLE_MAPS_API_KEY) {
+                    setDebugInfo("Google Maps API Key missing in .env.local");
+                }
                 if (!isPostcode) setHasError(true);
             }
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [query, isOpen, isLoaded]);
+    }, [query, isOpen, isLoaded, loadError]);
 
     const handleSelect = async (suggestion: Suggestion) => {
         if (suggestion.source === 'google-places' || suggestion.source === 'google-geocoding') {
@@ -201,13 +217,13 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                                 postcode: postcode || "",
                             });
                             setQuery(fullStreet || place.formatted_address || suggestion.description);
+                        } else {
+                            setDebugInfo(`Place Details Error: ${status}`);
                         }
                     }
                 );
             }
         } else if (suggestion.source === 'postcodes-io') {
-            // If it's just a postcode result from postcodes.io, we set the postcode and let user fill rest
-            // or we could show it as a specific suggestion that then prompts for house number
             onSelect({
                 address: "",
                 city: suggestion.secondaryText.split(',')[0].trim(),
@@ -231,16 +247,17 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
                         setQuery(e.target.value);
                         setIsOpen(true);
                         setHasError(false);
+                        setDebugInfo(null);
                     }}
                     onFocus={() => setIsOpen(true)}
                     className={cn(
                         "rounded-none h-14 border-border/60 pl-10 transition-all focus:border-[#B88E2F] focus:ring-0 shadow-sm",
-                        hasError && "border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500"
+                        (hasError || debugInfo) && "border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500"
                     )}
                 />
                 <Search className={cn(
                     "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
-                    hasError ? "text-red-500" : "text-muted-foreground"
+                    (hasError || debugInfo) ? "text-red-500" : "text-muted-foreground"
                 )} />
                 {isLoading && (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[#B88E2F] w-4 h-4" />
@@ -248,9 +265,20 @@ export function AddressAutocomplete({ onSelect, defaultValue = "", className, co
             </div>
 
             {hasError && (
-                <p className="text-[10px] text-red-500 mt-2 ml-1 uppercase tracking-widest font-medium animate-in fade-in slide-in-from-top-1">
-                    No matching UK addresses found. Please check and try again.
-                </p>
+                <div className="mt-3 p-3 bg-red-50 border border-red-100 animate-in fade-in slide-in-from-top-1">
+                    <p className="text-[10px] text-red-600 uppercase tracking-widest font-bold">
+                        No matching UK addresses found.
+                    </p>
+                    <p className="text-[9px] text-red-500 mt-1">
+                        Try typing more, double-check your postcode, or enter the address manually below.
+                    </p>
+                </div>
+            )}
+
+            {debugInfo && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 text-[9px] text-yellow-800 font-mono">
+                    ⚠️ Debug: {debugInfo}
+                </div>
             )}
 
             {isOpen && (suggestions.length > 0 || (isLoading && query.length >= 3)) && (
