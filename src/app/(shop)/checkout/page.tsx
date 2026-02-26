@@ -175,7 +175,7 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-white">
-            <div className="container mx-auto px-4 py-12 md:py-20 lg:px-20 xl:px-32">
+            <div className="container mx-auto px-4 pt-32 pb-12 md:pt-48 md:pb-20 lg:px-20 xl:px-32">
                 <div className="flex flex-col lg:flex-row gap-20">
                     {/* Checkout Form */}
                     <div className="flex-1">

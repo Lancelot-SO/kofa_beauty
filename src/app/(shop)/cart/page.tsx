@@ -56,7 +56,7 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen bg-white">
-            <div className="container mx-auto px-4 py-16 md:py-24">
+            <div className="container mx-auto px-4 pt-32 pb-16 md:pt-48 md:pb-24">
                 <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16 border-b border-border/40 pb-8">
                     <div>
                         <Link href="/shop/all" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-black transition-colors mb-4">
