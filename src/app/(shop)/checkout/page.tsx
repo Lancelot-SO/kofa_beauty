@@ -372,7 +372,7 @@ export default function CheckoutPage() {
                                                         name="postcode"
                                                         placeholder="Postcode" 
                                                         className="rounded-none h-14 border-border/60" 
-                                                        required 
+                                                        required={formData.country === "United Kingdom"}
                                                         value={formData.postcode}
                                                         onChange={(e) => {
                                                             handleInputChange(e);
