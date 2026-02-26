@@ -24,11 +24,10 @@ export function Footer() {
                         </p>
                         <div className="flex gap-4">
                             {[
-                                { icon: Instagram, href: "#" },
-                                { icon: Facebook, href: "#" },
-                                { icon: Tiktok, href: "https://www.tiktok.com/tag/liyadances" },
-                                { icon: Youtube, href: "#" },
-                                { icon: Twitter, href: "#" }
+                                { icon: Instagram, href: "https://www.instagram.com/kofabeautyy?igsh=MWFlbjhzNjJ1c2ZmYQ%3D%3D&utm_source=qr" },
+                                { icon: Facebook, href: "https://www.facebook.com/kofabeauty" },
+                                { icon: Tiktok, href: "https://www.tiktok.com/@kofabeauty?_r=1&_t=ZN-93Z5Xv8kU3q" },
+
                             ].map((social, i) => (
                                 <Link
                                     key={i}
