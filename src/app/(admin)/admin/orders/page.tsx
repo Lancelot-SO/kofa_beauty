@@ -79,6 +79,32 @@ export default function OrdersPage() {
         try {
             await updateOrderStatus(id, status);
             toast.success(`Order updated to ${status}`);
+
+            // Send status update email to customer
+            const order = orders.find(o => o.id === id);
+            if (order && status !== 'Pending Payment') {
+                try {
+                    await fetch('/api/order-status-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            customerEmail: order.customer_email,
+                            customerName: order.customer_name,
+                            orderNumber: order.order_number,
+                            newStatus: status,
+                            items: order.items.map(item => ({
+                                name: item.product_name,
+                                quantity: item.quantity,
+                                price: Number(item.price),
+                            })),
+                            total: Number(order.total),
+                        }),
+                    });
+                    toast.success('Status update email sent to customer');
+                } catch {
+                    toast.warning('Status updated but email notification failed');
+                }
+            }
         } catch {
             toast.error("Failed to update order status");
         }

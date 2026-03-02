@@ -35,7 +35,7 @@ export async function POST(request: Request) {
             if (orderDetails) {
                 try {
                     await resend.emails.send({
-                        from: 'Kofa Beauty <onboarding@resend.dev>', // Replace with your verified domain
+                        from: 'Kofa Beauty <orders@kofabeauty.com>',
                         to: orderDetails.email,
                         subject: `Order Confirmation - ${orderDetails.orderNumber || reference}`,
                         react: OrderEmail({

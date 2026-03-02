@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
         // Send email
         const data = await resend.emails.send({
-            from: 'Kofa Beauty <onboarding@resend.dev>', // Default Resend test domain
+            from: 'Kofa Beauty <orders@kofabeauty.com>',
             to: ['carrine@kofabeauty.com'], // In prod this should be env var, but using this for now as user requested
             subject: `New Contact Form: ${subject || 'No Subject'}`,
             replyTo: email,
