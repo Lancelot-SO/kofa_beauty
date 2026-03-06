@@ -17,7 +17,7 @@ import { Profile } from "@/lib/supabase/types";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
-import { getEffectivePrice, formatPrice, convertPrice } from "@/lib/utils/price";
+import { getEffectivePrice, getEffectivePriceForCurrency, formatPrice, formatDirectPrice, convertPrice } from "@/lib/utils/price";
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 const PaymentStep = dynamic(() => import("@/components/checkout/PaymentStep"), { ssr: false });
@@ -507,8 +507,11 @@ export default function CheckoutPage() {
                                             <div className="flex-1 flex flex-col justify-center">
                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{product.category}</p>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <p className="text-xs font-medium italic">{formatPrice(getEffectivePrice(product), currency, rates)}</p>
-                                                    {getEffectivePrice(product) < product.price && (
+                                                    <p className="text-xs font-medium italic">{(() => {
+                                                        const { price: effPrice, isLocalPrice } = getEffectivePriceForCurrency(product, currency);
+                                                        return isLocalPrice ? formatDirectPrice(effPrice, currency) : formatPrice(getEffectivePrice(product), currency, rates);
+                                                    })()}</p>
+                                                    {!getEffectivePriceForCurrency(product, currency).isLocalPrice && getEffectivePrice(product) < product.price && (
                                                         <span className="text-[10px] line-through text-muted-foreground/60">
                                                             {formatPrice(product.price, currency, rates)}
                                                         </span>

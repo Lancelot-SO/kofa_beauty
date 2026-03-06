@@ -21,7 +21,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { isSaleActive, formatPrice } from "@/lib/utils/price";
+import { isSaleActive, formatPrice, formatDirectPrice, getEffectivePriceForCurrency } from "@/lib/utils/price";
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 // --- Components ---
@@ -234,14 +234,25 @@ export default function ProductPage() {
                                     {product.name}
                                 </h1>
                                 <div className="flex items-center gap-3">
-                                    {isSaleActive(product) ? (
-                                        <>
-                                            <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.sale_price), currency, rates)}</p>
-                                            <p className="text-lg text-slate-400 line-through">{formatPrice(Number(product.price), currency, rates)}</p>
-                                        </>
-                                    ) : (
-                                        <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.price), currency, rates)}</p>
-                                    )}
+                                    {(() => {
+                                        const { price: localPrice, isLocalPrice } = getEffectivePriceForCurrency(product, currency);
+                                        if (isLocalPrice) {
+                                            return (
+                                                <p className="text-2xl font-semibold text-slate-900">{formatDirectPrice(localPrice, currency)}</p>
+                                            );
+                                        }
+                                        if (isSaleActive(product)) {
+                                            return (
+                                                <>
+                                                    <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.sale_price), currency, rates)}</p>
+                                                    <p className="text-lg text-slate-400 line-through">{formatPrice(Number(product.price), currency, rates)}</p>
+                                                </>
+                                            );
+                                        }
+                                        return (
+                                            <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.price), currency, rates)}</p>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </Reveal>

@@ -1,19 +1,23 @@
 "use client";
 
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
-import { formatPrice } from "@/lib/utils/price";
+import { formatPrice, formatDirectPrice } from "@/lib/utils/price";
 import { CurrencyCode } from "@/lib/constants/currency";
 import { useState, useEffect } from "react";
 
 interface LocalizedPriceProps {
     amount: number;
     baseCurrency?: CurrencyCode; // Usually GHS
+    ukPrice?: number | null; // Fixed UK price in GBP
+    ngnPrice?: number | null; // Fixed Nigeria price in NGN
     className?: string;
     showBase?: boolean;
 }
 
 export function LocalizedPrice({ 
     amount, 
+    ukPrice,
+    ngnPrice,
     className = "", 
     showBase = false 
 }: LocalizedPriceProps) {
@@ -34,10 +38,19 @@ export function LocalizedPrice({
         );
     }
 
+    // Determine which price to use
+    const useFixedUkPrice = currency === 'GBP' && ukPrice != null && ukPrice > 0;
+    const useFixedNgnPrice = currency === 'NGN' && ngnPrice != null && ngnPrice > 0;
+    const useFixedPrice = useFixedUkPrice || useFixedNgnPrice;
+    const directPrice = useFixedUkPrice ? ukPrice! : (useFixedNgnPrice ? ngnPrice! : null);
+
     return (
         <span className={className}>
-            {formatPrice(amount, currency, rates)}
-            {showBase && currency !== 'GHS' && (
+            {useFixedPrice 
+                ? formatDirectPrice(directPrice!, currency)
+                : formatPrice(amount, currency, rates)
+            }
+            {showBase && currency !== 'GHS' && !useFixedPrice && (
                 <span className="ml-1 text-[0.8em] opacity-60">
                     ({formatPrice(amount, 'GHS')})
                 </span>
@@ -45,3 +58,4 @@ export function LocalizedPrice({
         </span>
     );
 }
+

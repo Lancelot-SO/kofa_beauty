@@ -9,7 +9,7 @@ import { useCartStore, getCartSubtotal } from "@/lib/store/useCartStore";
 import { useState, useEffect } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
-import { getEffectivePrice, formatPrice } from "@/lib/utils/price";
+import { getEffectivePrice, getEffectivePriceForCurrency, formatPrice, formatDirectPrice } from "@/lib/utils/price";
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 export default function CartPage() {
@@ -95,16 +95,22 @@ export default function CartPage() {
                                                     </Link>
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-sm text-muted-foreground font-light">
-                                                            Unit Price: {formatPrice(getEffectivePrice(product), currency, rates)}
+                                                            Unit Price: {(() => {
+                                                                const { price: effPrice, isLocalPrice } = getEffectivePriceForCurrency(product, currency);
+                                                                return isLocalPrice ? formatDirectPrice(effPrice, currency) : formatPrice(getEffectivePrice(product), currency, rates);
+                                                            })()}
                                                         </p>
-                                                        {getEffectivePrice(product) < product.price && (
+                                                        {!getEffectivePriceForCurrency(product, currency).isLocalPrice && getEffectivePrice(product) < product.price && (
                                                             <span className="text-xs line-through text-muted-foreground/60">
                                                                 {formatPrice(product.price, currency, rates)}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <p className="text-xl font-light">{formatPrice(getEffectivePrice(product) * quantity, currency, rates)}</p>
+                                                <p className="text-xl font-light">{(() => {
+                                                    const { price: effPrice, isLocalPrice } = getEffectivePriceForCurrency(product, currency);
+                                                    return isLocalPrice ? formatDirectPrice(effPrice * quantity, currency) : formatPrice(getEffectivePrice(product) * quantity, currency, rates);
+                                                })()}</p>
                                             </div>
 
                                             <div className="flex justify-between items-center mt-8">

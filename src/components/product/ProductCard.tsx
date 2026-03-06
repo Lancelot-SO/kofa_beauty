@@ -10,7 +10,7 @@ import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { isSaleActive, formatPrice } from "@/lib/utils/price";
+import { isSaleActive, formatPrice, formatDirectPrice, getEffectivePriceForCurrency } from "@/lib/utils/price";
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
 
 interface ProductCardProps {
@@ -54,9 +54,15 @@ export function ProductCard({ product }: ProductCardProps) {
         }
     };
 
+    // Check if we should use a fixed local price (UK or NGN)
+    const localPriceResult = isMounted ? getEffectivePriceForCurrency(product, currency) : null;
+    const useLocalPrice = localPriceResult?.isLocalPrice ?? false;
+
     const renderPrice = (amount: number) => {
         // Fallback to GHS for SSR to match the server-side render
         if (!isMounted) return formatPrice(amount, 'GHS');
+        // If we have a fixed local price, renderPrice is called with the local price directly
+        if (useLocalPrice) return formatDirectPrice(amount, currency);
         return formatPrice(amount, currency, rates);
     };
 
@@ -150,7 +156,11 @@ export function ProductCard({ product }: ProductCardProps) {
                         </h3>
                     </Link>
                     <p className="flex items-center justify-center gap-4 font-medium">
-                        {isSaleActive(product) ? (
+                        {useLocalPrice && localPriceResult ? (
+                            <span className="text-slate-900">
+                                {renderPrice(localPriceResult.price)}
+                            </span>
+                        ) : isSaleActive(product) ? (
                             <>
                                 <span className="line-through text-slate-400 text-sm">
                                      {renderPrice(Number(product.price))}
@@ -170,3 +180,4 @@ export function ProductCard({ product }: ProductCardProps) {
         </motion.div>
     );
 }
+

@@ -34,6 +34,8 @@ const productSchema = z.object({
     price: z.number().min(0.01, "Price must be greater than 0"),
     sale_price: z.number().nullable().optional(),
     sale_end_date: z.string().nullable().optional(),
+    uk_price: z.number().nullable().optional(),
+    ngn_price: z.number().nullable().optional(),
     stock: z.number().min(0, "Stock cannot be negative"),
     weight: z.number().optional(),
     status: z.enum(["Active", "Draft", "Out of Stock"]),
@@ -76,6 +78,8 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
             price: 0,
             sale_price: null,
             sale_end_date: null,
+            uk_price: null,
+            ngn_price: null,
             stock: 0,
             weight: 0,
             status: "Active",
@@ -153,6 +157,8 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                 price: Number(initialData.price),
                 sale_price: initialData.sale_price ? Number(initialData.sale_price) : null,
                 sale_end_date: initialData.sale_end_date || null,
+                uk_price: initialData.uk_price ? Number(initialData.uk_price) : null,
+                ngn_price: initialData.ngn_price ? Number(initialData.ngn_price) : null,
                 stock: initialData.stock,
                 weight: initialData.weight ? Number(initialData.weight) : 0,
                 status: initialData.status,
@@ -172,6 +178,8 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                 ...values,
                 sale_price: values.sale_price || null,
                 sale_end_date: values.sale_end_date || null,
+                uk_price: values.uk_price || null,
+                ngn_price: values.ngn_price || null,
                 images: values.images?.length ? values.images : (values.image ? [values.image] : []),
             };
 
@@ -400,6 +408,72 @@ export function ProductForm({ initialData, onSuccess, onCancel }: ProductFormPro
                                                     className="bg-white border-slate-200 h-11" 
                                                 />
                                             </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="uk_price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <div className="flex justify-between items-center">
+                                                <FormLabel className="text-sm font-semibold text-slate-700">UK Price (£)</FormLabel>
+                                                {field.value && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => form.setValue("uk_price", null)}
+                                                        className="text-[10px] text-red-500 hover:text-red-600 font-bold uppercase tracking-wider"
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <FormControl>
+                                                <Input 
+                                                    type="number" 
+                                                    step="0.01" 
+                                                    placeholder="0.00 (optional)" 
+                                                    {...field} 
+                                                    value={field.value ?? ''}
+                                                    onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
+                                                    className="bg-white border-slate-200 h-11" 
+                                                />
+                                            </FormControl>
+                                            <p className="text-[10px] text-slate-400 mt-1">Fixed price shown to UK visitors</p>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ngn_price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <div className="flex justify-between items-center">
+                                                <FormLabel className="text-sm font-semibold text-slate-700">NGN Price (₦)</FormLabel>
+                                                {field.value && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => form.setValue("ngn_price", null)}
+                                                        className="text-[10px] text-red-500 hover:text-red-600 font-bold uppercase tracking-wider"
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <FormControl>
+                                                <Input 
+                                                    type="number" 
+                                                    step="0.01" 
+                                                    placeholder="0.00 (optional)" 
+                                                    {...field} 
+                                                    value={field.value ?? ''}
+                                                    onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
+                                                    className="bg-white border-slate-200 h-11" 
+                                                />
+                                            </FormControl>
+                                            <p className="text-[10px] text-slate-400 mt-1">Fixed price shown to Nigerian visitors</p>
                                             <FormMessage />
                                         </FormItem>
                                     )}

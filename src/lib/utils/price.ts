@@ -12,6 +12,21 @@ export function getEffectivePrice(product: Product): number {
     return salePrice;
 }
 
+/**
+ * Returns the effective price for a given currency.
+ * When currency is GBP and the product has a uk_price set, returns the uk_price directly
+ * (already in GBP, no conversion needed). Otherwise falls back to the normal GHS effective price.
+ */
+export function getEffectivePriceForCurrency(product: Product, currency: CurrencyCode): { price: number; isLocalPrice: boolean } {
+    if (currency === 'GBP' && product.uk_price != null && Number(product.uk_price) > 0) {
+        return { price: Number(product.uk_price), isLocalPrice: true };
+    }
+    if (currency === 'NGN' && product.ngn_price != null && Number(product.ngn_price) > 0) {
+        return { price: Number(product.ngn_price), isLocalPrice: true };
+    }
+    return { price: getEffectivePrice(product), isLocalPrice: false };
+}
+
 export function isSaleActive(product: Product): boolean {
     const salePrice = product.sale_price ? Number(product.sale_price) : null;
     const price = Number(product.price);
@@ -53,4 +68,18 @@ export function formatPrice(amount: number, currency: CurrencyCode, rates?: Reco
         currency: config.label,
         minimumFractionDigits: 2,
     }).format(convertedAmount);
+}
+
+/**
+ * Formats a price that is already in the target currency (no conversion).
+ * Used for UK prices that are stored directly in GBP.
+ */
+export function formatDirectPrice(amount: number, currency: CurrencyCode): string {
+    const config = CURRENCY_CONFIG[currency];
+    
+    return new Intl.NumberFormat(config.locale, {
+        style: 'currency',
+        currency: config.label,
+        minimumFractionDigits: 2,
+    }).format(amount);
 }
