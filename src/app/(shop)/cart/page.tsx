@@ -18,8 +18,9 @@ export default function CartPage() {
     const { currency, rates } = useCurrency();
 
     const subtotal = getCartSubtotal(items);
+    const shippingFee = currency === "GBP" ? 42 / (rates['GBP'] || 0.051) : SHIPPING_FEE;
     const tax = subtotal * TAX_RATE;
-    const total = subtotal + SHIPPING_FEE + tax;
+    const total = subtotal + shippingFee + tax;
 
     useEffect(() => {
         setIsMounted(true);
@@ -157,8 +158,10 @@ export default function CartPage() {
                                         <span className="text-black font-medium">{formatPrice(subtotal, currency, rates)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-                                        <span>Delivery Fee (Pay to Rider)</span>
-                                        <span className="text-[#B88E2F] font-bold italic">TBD</span>
+                                        <span>Delivery Fee {currency === "GBP" ? "" : "(Pay to Rider)"}</span>
+                                        <span className="text-[#B88E2F] font-bold italic">
+                                            {currency === "GBP" ? formatPrice(shippingFee, currency, rates) : "TBD"}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">
                                         <span>Estimated Tax</span>

@@ -27,6 +27,7 @@ interface OrderEmailProps {
         price: number;
     }[];
     total: number;
+    shippingFee?: number;
     shippingAddress: string;
     currency?: CurrencyCode;
 }
@@ -36,6 +37,7 @@ export const OrderEmail = ({
     orderNumber,
     items,
     total,
+    shippingFee = 0,
     shippingAddress,
     currency = 'GHS',
 }: OrderEmailProps) => (
@@ -50,7 +52,7 @@ export const OrderEmail = ({
                 <Section style={section}>
                     <Text style={text}>Hi {customerName},</Text>
                     <Text style={text}>
-                        Thank you for your order! We're processing it now. Please note that the delivery fee is to be settled directly with the rider upon arrival.
+                        Thank you for your order! We're processing it now. {shippingFee > 0 ? "Your shipping fee is included in the total." : "Please note that the delivery fee is to be settled directly with the rider upon arrival."}
                     </Text>
                     <Text style={orderLabel}>Order Number: <span style={orderValue}>{orderNumber}</span></Text>
                 </Section>
@@ -66,6 +68,16 @@ export const OrderEmail = ({
                             </Column>
                         </Row>
                     ))}
+                    {shippingFee > 0 && (
+                        <Row style={itemRow}>
+                            <Column style={{ textAlign: "left" }}>
+                                <Text style={itemName}>Shipping Fee</Text>
+                            </Column>
+                            <Column style={{ textAlign: "right" }}>
+                                <Text style={itemPrice}>{formatPrice(shippingFee, currency)}</Text>
+                            </Column>
+                        </Row>
+                    )}
                     <Hr style={hr} />
                     <Row>
                         <Column style={{ textAlign: "left" }}>

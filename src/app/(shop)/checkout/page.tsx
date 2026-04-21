@@ -44,9 +44,6 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { currency, rates } = useCurrency();
 
-    const tax = subtotal * TAX_RATE;
-    const total = subtotal + SHIPPING_FEE + tax;
-
     // Form State
     const [formData, setFormData] = useState({
         email: "",
@@ -59,6 +56,13 @@ export default function CheckoutPage() {
         country: "Ghana",
         phone: "",
     });
+
+    const shippingFee = (formData.country === "United Kingdom" || currency === "GBP") 
+        ? 42 / (rates['GBP'] || 0.051) 
+        : SHIPPING_FEE;
+
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + shippingFee + tax;
 
     const [showManualAddress, setShowManualAddress] = useState(false);
     const [postcodeQuery, setPostcodeQuery] = useState("");
@@ -436,7 +440,7 @@ export default function CheckoutPage() {
                                                     <div className="text-[10px] uppercase tracking-widest font-bold">Delivery Arrangement</div>
                                                 </div>
                                                 <span className="text-xs font-bold uppercase tracking-widest text-[#B88E2F]">
-                                                    {formatPrice(SHIPPING_FEE, currency, rates)}
+                                                    {formatPrice(shippingFee, currency, rates)}
                                                 </span>
                                             </div>
                                         </div>
@@ -451,7 +455,9 @@ export default function CheckoutPage() {
                                             </div>
                                             <div className="p-6 border border-border/60 rounded-none bg-secondary/5 text-center space-y-4">
                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-relaxed">
-                                                    Payment for products & delivery will be processed upon arrival. Delivery fee is settled directly with the rider.
+                                                    {shippingFee > 0 
+                                                        ? "Shipping fee is included in your total and will be processed at checkout."
+                                                        : "Payment for products & delivery will be processed upon arrival. Delivery fee is settled directly with the rider."}
                                                 </p>
                                                 <div className="flex justify-center gap-4 opacity-50 grayscale">
                                                     {/* Payment Logos can go here */}
@@ -469,6 +475,7 @@ export default function CheckoutPage() {
                                                 <PaymentStep 
                                                     formData={formData}
                                                     total={total}
+                                                    shippingFee={shippingFee}
                                                     subtotal={subtotal}
                                                     items={items}
                                                     profileId={profile?.id || null}
@@ -530,8 +537,12 @@ export default function CheckoutPage() {
                                         <span className="text-black font-medium">{formatPrice(subtotal, currency, rates)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-                                        <span>Delivery Fee (Pay to Rider)</span>
-                                        <span className="text-[#B88E2F] font-bold italic">TBD</span>
+                                        <span>Delivery Fee {(formData.country === "United Kingdom" || currency === "GBP") ? "" : "(Pay to Rider)"}</span>
+                                        <span className="text-[#B88E2F] font-bold italic">
+                                            {(formData.country === "United Kingdom" || currency === "GBP") 
+                                                ? formatPrice(42 / (rates['GBP'] || 0.051), currency, rates) 
+                                                : (shippingFee > 0 ? formatPrice(shippingFee, currency, rates) : "TBD")}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
                                         <span>Tax</span>

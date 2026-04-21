@@ -13,6 +13,7 @@ import { useCurrency } from "@/lib/contexts/CurrencyContext";
 interface PaymentStepProps {
     formData: any;
     total: number;
+    shippingFee: number;
     subtotal: number;
     items: any[];
     profileId: string | null;
@@ -22,6 +23,7 @@ interface PaymentStepProps {
 export default function PaymentStep({ 
     formData, 
     total, 
+    shippingFee,
     subtotal,
     items, 
     profileId, 
@@ -117,6 +119,7 @@ export default function PaymentStep({
                                         price: getEffectivePrice(item.product),
                                     })),
                                     total: total,
+                                    shippingFee: shippingFee,
                                     shippingAddress: `${formData.address}, ${formData.apartment ? formData.apartment + ', ' : ''}${formData.city}, ${formData.postcode}`,
                                     currency: currency,
                                 }
