@@ -18,7 +18,7 @@ export default function CartPage() {
     const { currency, rates } = useCurrency();
 
     const subtotal = getCartSubtotal(items);
-    const shippingFee = currency === "GBP" ? 42 / (rates['GBP'] || 0.051) : SHIPPING_FEE;
+    const shippingFee = currency === "GBP" ? 133 : SHIPPING_FEE;
     const tax = subtotal * TAX_RATE;
     const total = subtotal + shippingFee + tax;
 
@@ -160,7 +160,7 @@ export default function CartPage() {
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
                                         <span>Delivery Fee {currency === "GBP" ? "" : "(Pay to Rider)"}</span>
                                         <span className="text-[#B88E2F] font-bold italic">
-                                            {currency === "GBP" ? formatPrice(shippingFee, currency, rates) : "TBD"}
+                                            {shippingFee > 0 ? formatPrice(shippingFee, currency, rates) : "TBD"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">

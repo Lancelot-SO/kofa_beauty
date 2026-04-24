@@ -58,7 +58,7 @@ export default function CheckoutPage() {
     });
 
     const shippingFee = (formData.country === "United Kingdom" || currency === "GBP") 
-        ? 42 / (rates['GBP'] || 0.051) 
+        ? 133 
         : SHIPPING_FEE;
 
     const tax = subtotal * TAX_RATE;
@@ -539,9 +539,9 @@ export default function CheckoutPage() {
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
                                         <span>Delivery Fee {(formData.country === "United Kingdom" || currency === "GBP") ? "" : "(Pay to Rider)"}</span>
                                         <span className="text-[#B88E2F] font-bold italic">
-                                            {(formData.country === "United Kingdom" || currency === "GBP") 
-                                                ? formatPrice(42 / (rates['GBP'] || 0.051), currency, rates) 
-                                                : (shippingFee > 0 ? formatPrice(shippingFee, currency, rates) : "TBD")}
+                                            {(formData.country === "United Kingdom" || currency === "GBP" || shippingFee > 0) 
+                                                ? formatPrice(shippingFee, currency, rates) 
+                                                : "TBD"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">

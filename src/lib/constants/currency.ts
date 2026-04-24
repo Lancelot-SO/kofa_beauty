@@ -1,6 +1,6 @@
 export const EXCHANGE_RATES = {
     GHS: 1,      // Base currency
-    GBP: 0.051,  // 1 GHS to GBP (Approximate, will update)
+    GBP: 0.066,  // 1 GHS to GBP (Updated to be more current)
     NGN: 104.5,   // 1 GHS to NGN (Approximate, will update)
 };
 
