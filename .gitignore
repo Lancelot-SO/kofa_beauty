@@ -15,7 +15,10 @@
 
 # next.js
 /.next/
+/.next_webpack/
 /out/
+.turbo/
+.cache/
 
 # production
 /build
