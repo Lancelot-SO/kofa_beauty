@@ -17,6 +17,7 @@ interface PaymentStepProps {
     subtotal: number;
     items: any[];
     profileId: string | null;
+    isCartValid: boolean;
     onSuccess: () => void;
 }
 
@@ -27,6 +28,7 @@ export default function PaymentStep({
     subtotal,
     items, 
     profileId, 
+    isCartValid,
     onSuccess 
 }: PaymentStepProps) {
     const [isProcessing, setIsProcessing] = useState(false);
@@ -160,9 +162,10 @@ export default function PaymentStep({
             ) : (
                 <Button 
                     onClick={handlePayment}
+                    disabled={!isCartValid}
                     className="w-full h-14 bg-black text-white hover:bg-neutral-800 transition-colors uppercase text-[10px] tracking-[0.3em] font-bold flex items-center justify-center gap-3"
                 >
-                    Confirm Order ({formatPrice(total, currency, rates)})
+                    {isCartValid ? `Confirm Order (${formatPrice(total, currency, rates)})` : "Out of Stock"}
                 </Button>
             )}
         </div>

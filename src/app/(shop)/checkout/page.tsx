@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Reveal } from "@/components/ui/Reveal";
-import { ChevronLeft, Lock, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { ChevronLeft, Lock, ArrowRight, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { getEffectivePrice, getEffectivePriceForCurrency, formatPrice, formatDirectPrice, convertPrice } from "@/lib/utils/price";
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
+import { useProductStore } from "@/lib/store/useProductStore";
 
 const PaymentStep = dynamic(() => import("@/components/checkout/PaymentStep"), { ssr: false });
 const PaystackButton = dynamic(() => import("@/components/checkout/PaystackButton"), { ssr: false });
@@ -36,6 +37,7 @@ export default function CheckoutPage() {
     const { items, clearCart } = useCartStore();
     const subtotal = getCartSubtotal(items);
     const { addOrder } = useOrderStore();
+    const { products, fetchProducts } = useProductStore();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Success
@@ -99,7 +101,15 @@ export default function CheckoutPage() {
         };
 
         fetchProfile();
-    }, []);
+        fetchProducts();
+    }, [fetchProducts]);
+
+    const isCartValid = items.every(item => {
+        const productData = products.find(p => p.id === item.product.id);
+        const stock = productData !== undefined ? productData.stock : item.product.stock;
+        const status = productData !== undefined ? productData.status : item.product.status;
+        return stock >= item.quantity && status !== 'Out of Stock' && status !== 'Draft';
+    });
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -453,6 +463,16 @@ export default function CheckoutPage() {
                                                     Secure Payment
                                                 </div>
                                             </div>
+
+                                            {!isCartValid && (
+                                                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 mb-6">
+                                                    <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                                                    <p className="text-[10px] text-red-700 uppercase tracking-widest font-bold leading-relaxed text-left">
+                                                        Some items in your order are no longer available. Please return to your bag to adjust.
+                                                    </p>
+                                                </div>
+                                            )}
+
                                             <div className="p-6 border border-border/60 rounded-none bg-secondary/5 text-center space-y-4">
                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-relaxed">
                                                     {shippingFee > 0 
@@ -479,6 +499,7 @@ export default function CheckoutPage() {
                                                     subtotal={subtotal}
                                                     items={items}
                                                     profileId={profile?.id || null}
+                                                    isCartValid={isCartValid}
                                                     onSuccess={handlePaymentSuccess}
                                                 />
                                             )}

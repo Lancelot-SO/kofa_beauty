@@ -301,13 +301,13 @@ export default function ProductPage() {
                                 <div className="flex gap-4 pt-4">
                                     <Button
                                         onClick={handleAddToCart}
-                                        disabled={product.stock === 0}
+                                        disabled={product.stock === 0 || product.status === 'Out of Stock'}
                                         className={cn(
                                             "flex-1 h-14 rounded-full text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5",
                                             isAdded ? "bg-green-600 hover:bg-green-700 text-white" : "bg-black hover:bg-slate-800 text-white"
                                         )}
                                     >
-                                        {isAdded ? 'Added to Bag' : product.stock === 0 ? 'Sold Out' : 'Add to Cart'}
+                                        {isAdded ? 'Added to Bag' : (product.stock === 0 || product.status === 'Out of Stock') ? 'Sold Out' : 'Add to Cart'}
                                     </Button>
                                     <button className="h-14 w-14 flex items-center justify-center rounded-full border border-slate-200 text-slate-900 hover:border-black hover:bg-slate-50 transition-all">
                                         <Heart size={20} />
