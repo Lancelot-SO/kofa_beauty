@@ -43,6 +43,7 @@ export async function POST(request: Request) {
                             orderNumber: orderDetails.orderNumber || reference,
                             items: orderDetails.items,
                             total: orderDetails.total,
+                            shippingFee: orderDetails.shippingFee,
                             shippingAddress: orderDetails.shippingAddress,
                             currency: orderDetails.currency,
                         }),

@@ -13,18 +13,22 @@ import { useCurrency } from "@/lib/contexts/CurrencyContext";
 interface PaymentStepProps {
     formData: any;
     total: number;
+    shippingFee: number;
     subtotal: number;
     items: any[];
     profileId: string | null;
+    isCartValid: boolean;
     onSuccess: () => void;
 }
 
 export default function PaymentStep({ 
     formData, 
     total, 
+    shippingFee,
     subtotal,
     items, 
     profileId, 
+    isCartValid,
     onSuccess 
 }: PaymentStepProps) {
     const [isProcessing, setIsProcessing] = useState(false);
@@ -117,6 +121,7 @@ export default function PaymentStep({
                                         price: getEffectivePrice(item.product),
                                     })),
                                     total: total,
+                                    shippingFee: shippingFee,
                                     shippingAddress: `${formData.address}, ${formData.apartment ? formData.apartment + ', ' : ''}${formData.city}, ${formData.postcode}`,
                                     currency: currency,
                                 }
@@ -157,9 +162,10 @@ export default function PaymentStep({
             ) : (
                 <Button 
                     onClick={handlePayment}
+                    disabled={!isCartValid}
                     className="w-full h-14 bg-black text-white hover:bg-neutral-800 transition-colors uppercase text-[10px] tracking-[0.3em] font-bold flex items-center justify-center gap-3"
                 >
-                    Confirm Order ({formatPrice(total, currency, rates)})
+                    {isCartValid ? `Confirm Order (${formatPrice(total, currency, rates)})` : "Out of Stock"}
                 </Button>
             )}
         </div>

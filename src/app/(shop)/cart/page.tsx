@@ -11,19 +11,32 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SHIPPING_FEE, TAX_RATE } from "@/lib/constants";
 import { getEffectivePrice, getEffectivePriceForCurrency, formatPrice, formatDirectPrice } from "@/lib/utils/price";
 import { useCurrency } from "@/lib/contexts/CurrencyContext";
+import { useProductStore } from "@/lib/store/useProductStore";
+import { AlertCircle } from "lucide-react";
 
 export default function CartPage() {
     const { items, updateQuantity, removeItem } = useCartStore();
+    const { products, fetchProducts } = useProductStore();
     const [isMounted, setIsMounted] = useState(false);
     const { currency, rates } = useCurrency();
 
     const subtotal = getCartSubtotal(items);
+    const shippingFee = currency === "GBP" ? 133 : SHIPPING_FEE;
     const tax = subtotal * TAX_RATE;
-    const total = subtotal + SHIPPING_FEE + tax;
+    const total = subtotal + shippingFee + tax;
 
     useEffect(() => {
         setIsMounted(true);
-    }, []);
+        fetchProducts();
+    }, [fetchProducts]);
+
+    const isCartValid = items.every(item => {
+        const productData = products.find(p => p.id === item.product.id);
+        // Use fresh data if available, otherwise fallback to store data
+        const stock = productData !== undefined ? productData.stock : item.product.stock;
+        const status = productData !== undefined ? productData.status : item.product.status;
+        return stock >= item.quantity && status !== 'Out of Stock' && status !== 'Draft';
+    });
 
     if (!isMounted) return null;
 
@@ -107,10 +120,25 @@ export default function CartPage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <p className="text-xl font-light">{(() => {
-                                                    const { price: effPrice, isLocalPrice } = getEffectivePriceForCurrency(product, currency);
-                                                    return isLocalPrice ? formatDirectPrice(effPrice * quantity, currency) : formatPrice(getEffectivePrice(product) * quantity, currency, rates);
-                                                })()}</p>
+                                                <div className="text-right">
+                                                    <p className="text-xl font-light">{(() => {
+                                                        const { price: effPrice, isLocalPrice } = getEffectivePriceForCurrency(product, currency);
+                                                        return isLocalPrice ? formatDirectPrice(effPrice * quantity, currency) : formatPrice(getEffectivePrice(product) * quantity, currency, rates);
+                                                    })()}</p>
+                                                    {(() => {
+                                                        const productData = products.find(p => p.id === product.id);
+                                                        const stock = productData !== undefined ? productData.stock : product.stock;
+                                                        const status = productData !== undefined ? productData.status : product.status;
+                                                        
+                                                        if (status === 'Out of Stock' || stock === 0) {
+                                                            return <span className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1 block">Sold Out</span>;
+                                                        }
+                                                        if (stock < quantity) {
+                                                            return <span className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1 block">Only {stock} Left</span>;
+                                                        }
+                                                        return null;
+                                                    })()}
+                                                </div>
                                             </div>
 
                                             <div className="flex justify-between items-center mt-8">
@@ -157,8 +185,10 @@ export default function CartPage() {
                                         <span className="text-black font-medium">{formatPrice(subtotal, currency, rates)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-                                        <span>Delivery Fee (Pay to Rider)</span>
-                                        <span className="text-[#B88E2F] font-bold italic">TBD</span>
+                                        <span>Delivery Fee {currency === "GBP" ? "" : "(Pay to Rider)"}</span>
+                                        <span className="text-[#B88E2F] font-bold italic">
+                                            {shippingFee > 0 ? formatPrice(shippingFee, currency, rates) : "TBD"}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between text-sm uppercase tracking-widest text-muted-foreground">
                                         <span>Estimated Tax</span>
@@ -173,9 +203,23 @@ export default function CartPage() {
                                     <span className="text-3xl font-light">{formatPrice(total, currency, rates)}</span>
                                 </div>
 
-                                <Link href="/checkout" className="block w-full">
-                                    <Button variant="premium-dark" size="lg" className="w-full gap-3 shadow-xl">
-                                        Go to Checkout
+                                {!isCartValid && (
+                                    <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 mb-6">
+                                        <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                                        <p className="text-[10px] text-red-700 uppercase tracking-widest font-bold leading-relaxed">
+                                            Some items in your bag are no longer available or have insufficient stock. Please adjust your bag to continue.
+                                        </p>
+                                    </div>
+                                )}
+
+                                <Link href={isCartValid ? "/checkout" : "#"} className="block w-full">
+                                    <Button 
+                                        variant="premium-dark" 
+                                        size="lg" 
+                                        className="w-full gap-3 shadow-xl"
+                                        disabled={!isCartValid}
+                                    >
+                                        {isCartValid ? "Go to Checkout" : "Insufficient Stock"}
                                         <ArrowRight size={16} />
                                     </Button>
                                 </Link>

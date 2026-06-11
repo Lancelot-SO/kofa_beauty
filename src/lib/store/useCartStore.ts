@@ -28,6 +28,13 @@ export const useCartStore = create<CartState>()(
             items: [],
             addItem: (product) => set((state) => {
                 const existingItem = state.items.find(item => item.product.id === product.id);
+                const currentQuantity = existingItem ? existingItem.quantity : 0;
+                
+                // Check if we can add more
+                if (currentQuantity >= product.stock) {
+                    return state; // No change if out of stock
+                }
+
                 if (existingItem) {
                     return {
                         items: state.items.map(item =>
@@ -43,13 +50,20 @@ export const useCartStore = create<CartState>()(
                 items: state.items.filter(item => item.product.id !== productId)
             })),
             updateQuantity: (productId, quantity) => set((state) => {
+                const item = state.items.find(i => i.product.id === productId);
+                if (!item) return state;
+
                 if (quantity <= 0) {
                     return { items: state.items.filter(item => item.product.id !== productId) };
                 }
+
+                // Check stock limit
+                const finalQuantity = Math.min(quantity, item.product.stock);
+
                 return {
                     items: state.items.map(item =>
                         item.product.id === productId
-                            ? { ...item, quantity }
+                            ? { ...item, quantity: finalQuantity }
                             : item
                     )
                 };
