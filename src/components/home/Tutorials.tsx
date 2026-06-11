@@ -23,20 +23,20 @@ export function Tutorials() {
             subtitle: "HOW TO",
             title: "EYES",
             image: "/eyes_tutorial.jpg", // Close up eye makeup
-            link: "/tutorials/eyes"
+            link: "/shop?category=eyes"
         },
         {
             subtitle: "HOW TO",
             title: "FACE",
             image: "/face_tutorial.jpg", // Brushes face
-            link: "/tutorials/face",
+            link: "/shop?category=face",
             video: "YOUR_YOUTUBE_VIDEO_ID" // Replace with your YouTube video ID (e.g., dQw4w9WgXcQ from youtube.com/watch?v=dQw4w9WgXcQ)
         },
         {
             subtitle: "HOW TO",
             title: "LIPS",
             image: "/lips_tutorial.jpeg", // Lips close up
-            link: "/tutorials/lips"
+            link: "/shop?category=lips"
         }
     ];
 

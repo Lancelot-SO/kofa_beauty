@@ -59,10 +59,15 @@ export function Footer() {
                     <div className="md:col-span-3 space-y-6">
                         <h3 className="font-megante text-xl text-brand-rose uppercase tracking-widest">Client Services</h3>
                         <ul className="space-y-4">
-                            {['Shipping & Returns', 'Store Policy', 'Payment Methods', 'FAQ', 'Contact Us'].map((item) => (
-                                <li key={item}>
-                                    <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-sm text-gray-400 hover:text-white transition-colors font-megante">
-                                        {item}
+                            {[
+                                { label: 'Shipping & Returns', href: '/shipping-and-returns' },
+                                { label: 'Store Policy', href: '/store-policy' },
+                                { label: 'FAQ', href: '/faq' },
+                                { label: 'Contact Us', href: '/contact-us' },
+                            ].map((item) => (
+                                <li key={item.label}>
+                                    <Link href={item.href} className="text-sm text-gray-400 hover:text-white transition-colors font-megante">
+                                        {item.label}
                                     </Link>
                                 </li>
                             ))}
