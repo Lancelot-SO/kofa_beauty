@@ -128,6 +128,25 @@ export default function PaymentStep({
                             }),
                         });
 
+                        // 5. Send "Processing" status email with tracking timeline
+                        await fetch("/api/order-status-email", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                customerEmail: formData.email,
+                                customerName: `${formData.firstName} ${formData.lastName}`,
+                                orderNumber: newOrder.order_number,
+                                newStatus: "Processing",
+                                items: items.map(item => ({
+                                    name: item.product.name,
+                                    quantity: item.quantity,
+                                    price: getEffectivePrice(item.product),
+                                })),
+                                total: total,
+                                currency: currency,
+                            }),
+                        });
+
                         clearCart();
                         onSuccess();
                         toast.success("Order placed successfully!");
